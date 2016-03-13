@@ -6,9 +6,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.Utils;
-using Refactor;
 
-namespace StringIndexOf
+namespace Refactor
 {
 	public class Solution
 	{

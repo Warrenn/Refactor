@@ -20,7 +20,6 @@ using System.IO;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.CSharp.TypeSystem;
-using StringIndexOf;
 
 namespace Refactor
 {

@@ -4,15 +4,14 @@ using System.IO;
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using StringIndexOf;
 
 namespace Refactor
 {
     public class CSharpProject
     {
-        public Solution Solution { get; }
         public string Title { get; }
         public string AssemblyName { get; }
         public string FileName { get; }
@@ -20,6 +19,8 @@ namespace Refactor
         public IProjectContent ProjectContent { get; }
         public ICompilation Compilation { get; set; }
         public IEnumerable<CSharpFile> Files { get; }
+        public Project MsbuildProject { get; }
+        public Solution Solution { get; }
 
         public CSharpProject(Solution solution, string title, string fileName)
         {
@@ -31,15 +32,15 @@ namespace Refactor
             FileName = fileName;
 
             // Use MSBuild to open the .csproj
-            var msbuildProject = new Microsoft.Build.Evaluation.Project(fileName);
+            MsbuildProject = new Microsoft.Build.Evaluation.Project(fileName);
             // Figure out some compiler settings
-            AssemblyName = msbuildProject.GetPropertyValue("AssemblyName");
+            AssemblyName = MsbuildProject.GetPropertyValue("AssemblyName");
             CompilerSettings = new CompilerSettings
             {
-                AllowUnsafeBlocks = GetBoolProperty(msbuildProject, "AllowUnsafeBlocks") ?? false,
-                CheckForOverflow = GetBoolProperty(msbuildProject, "CheckForOverflowUnderflow") ?? false
+                AllowUnsafeBlocks = GetBoolProperty(MsbuildProject, "AllowUnsafeBlocks") ?? false,
+                CheckForOverflow = GetBoolProperty(MsbuildProject, "CheckForOverflowUnderflow") ?? false
             };
-            var defineConstants = msbuildProject.GetPropertyValue("DefineConstants");
+            var defineConstants = MsbuildProject.GetPropertyValue("DefineConstants");
             foreach (var symbol in defineConstants.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries))
             {
                 CompilerSettings.ConditionalSymbols.Add(symbol.Trim());
@@ -51,22 +52,22 @@ namespace Refactor
             projectContent = projectContent.SetProjectFileName(fileName);
             projectContent = projectContent.SetCompilerSettings(CompilerSettings);
 
-            Files = msbuildProject
+            Files = MsbuildProject
                 .GetItems("Compile")
-                .Select(item => new CSharpFile(this, Path.Combine(msbuildProject.DirectoryPath, item.EvaluatedInclude)));
+                .Select(item => new CSharpFile(this, Path.Combine(MsbuildProject.DirectoryPath, item.EvaluatedInclude)));
 
             // Add parsed files to the type system
             projectContent = projectContent.AddOrUpdateFiles(Files.Select(f => f.UnresolvedTypeSystemForFile));
 
             // Add referenced assemblies:
-            projectContent = ResolveAssemblyReferences(msbuildProject)
+            projectContent = ResolveAssemblyReferences(MsbuildProject)
                 .Select(solution.LoadAssembly)
                 .Aggregate(projectContent, (current, assembly) => current.AddAssemblyReferences(assembly));
 
             // Add project references:
-            projectContent = msbuildProject
+            projectContent = MsbuildProject
                 .GetItems("ProjectReference")
-                .Select(item => Path.Combine(msbuildProject.DirectoryPath, item.EvaluatedInclude))
+                .Select(item => Path.Combine(MsbuildProject.DirectoryPath, item.EvaluatedInclude))
                 .Select(Path.GetFullPath)
                 .Aggregate(projectContent,
                     (current, referencedFileName) =>
