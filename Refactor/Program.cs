@@ -15,23 +15,25 @@ namespace Refactor
     {
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.UnhandledException += UnhandledException;
             var options = new Options();
             if (!Parser.Default.ParseArguments(args, options))
             {
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             if (!File.Exists(options.Refactory))
             {
                 Trace.TraceError("The refactory strategy must exist");
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             if (!File.Exists(options.Solution))
             {
                 Trace.TraceError("The solution file must exist");
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
+
             var assemblies = AppDomain.CurrentDomain.GetAssemblies().Select(asmb => asmb.Location).ToArray();
             var results = CodeDomProvider
                 .CreateProvider("csharp")
@@ -43,7 +45,7 @@ namespace Refactor
                 {
                     Trace.TraceError(output);
                 }
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             var strategyType = results
@@ -54,7 +56,7 @@ namespace Refactor
             if (strategyType == null)
             {
                 Trace.TraceError("A valid type included in refactoy file");
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
 
             var strategy = Activator.CreateInstance(strategyType) as IRefactorStrategy;
@@ -62,7 +64,7 @@ namespace Refactor
             if (strategy == null)
             {
                 Trace.TraceError("The type couldn't be cast to a valid strategy");
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
             
             try
@@ -102,8 +104,14 @@ namespace Refactor
             catch (Exception ex)
             {
                 Trace.TraceError(ex.Message);
-                Environment.Exit(-1);
+                Environment.Exit(1);
             }
+        }
+
+        private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Trace.TraceError(e.ExceptionObject.ToString());
+            Environment.Exit(1);
         }
     }
 }
