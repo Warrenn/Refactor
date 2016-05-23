@@ -32,7 +32,7 @@ namespace Refactor
             FileName = fileName;
 
             // Use MSBuild to open the .csproj
-            MsbuildProject = new Microsoft.Build.Evaluation.Project(fileName);
+            MsbuildProject = new Project(fileName);
             // Figure out some compiler settings
             AssemblyName = MsbuildProject.GetPropertyValue("AssemblyName");
             CompilerSettings = new CompilerSettings
@@ -76,7 +76,7 @@ namespace Refactor
             ProjectContent = projectContent;
         }
 
-        IEnumerable<string> ResolveAssemblyReferences(Microsoft.Build.Evaluation.Project project)
+        IEnumerable<string> ResolveAssemblyReferences(Project project)
         {
             // Use MSBuild to figure out the full path of the referenced assemblies
             var projectInstance = project.CreateProjectInstance();
@@ -89,7 +89,7 @@ namespace Refactor
             return items.Select(i => baseDirectory != null ? Path.Combine(baseDirectory, i.GetMetadataValue("Identity")) : null);
         }
 
-        static bool? GetBoolProperty(Microsoft.Build.Evaluation.Project project, string propertyName)
+        static bool? GetBoolProperty(Project project, string propertyName)
         {
             var value = project.GetPropertyValue(propertyName);
             bool result;

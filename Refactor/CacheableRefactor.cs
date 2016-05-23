@@ -6,7 +6,7 @@ namespace Refactor
 {
     public class CacheableRefactor : IRefactorStrategy
     {
-        public void Refactor(FileEntry entry)
+        public void Refactor(FileEntry entry, string[] args)
         {
             var script = entry.Script;
             var methodDeclarations =
@@ -15,10 +15,10 @@ namespace Refactor
                     .SyntaxTree
                     .Descendants
                     .OfType<MethodDeclaration>()
-                    from attributesection in methodDeclaration.Attributes
-                    from attribute in attributesection.Attributes
-                    where attribute.Type.ToString() == "Cacheable"
-                    select methodDeclaration).ToArray();
+                 from attributesection in methodDeclaration.Attributes
+                 from attribute in attributesection.Attributes
+                 where attribute.Type.ToString() == "Cacheable"
+                 select methodDeclaration).ToArray();
 
             if (!methodDeclarations.Any())
             {
@@ -31,29 +31,29 @@ namespace Refactor
             {
                 var cachingPolicy = "";
                 var propertyKeys = "";
-                var cloneDeclaration = (MethodDeclaration) declaration.Clone();
-                var keyname = ((MemberResolveResult) astResolver.Resolve(declaration)).Member.FullName;
+                var cloneDeclaration = (MethodDeclaration)declaration.Clone();
+                var keyname = ((MemberResolveResult)astResolver.Resolve(declaration)).Member.FullName;
 
                 var cloneAttribute = (
                     from section in cloneDeclaration.Attributes
                     from attribute in section.Attributes
                     where attribute.Type.ToString() == "Cacheable"
-                    select new {section, attribute}).First();
+                    select new { section, attribute }).First();
 
                 var cachingPolicies =
                     (from expression in cloneAttribute
                         .attribute
                         .Arguments
                         .OfType<NamedExpression>()
-                        where expression.Name == "CachingPolicyName"
-                        select expression).ToArray();
+                     where expression.Name == "CachingPolicyName"
+                     select expression).ToArray();
 
                 var propertyKeysPrimitive =
                     (from expression in cloneAttribute
                         .attribute
                         .Arguments
                         .OfType<PrimitiveExpression>()
-                        select expression).ToArray();
+                     select expression).ToArray();
 
                 if (propertyKeysPrimitive.Any())
                 {
@@ -62,12 +62,12 @@ namespace Refactor
 
                 if (cachingPolicies.Any())
                 {
-                    cachingPolicy = ((PrimitiveExpression) cachingPolicies[0].Expression).Value as string;
+                    cachingPolicy = ((PrimitiveExpression)cachingPolicies[0].Expression).Value as string;
                 }
 
                 cloneDeclaration.Attributes.Remove(cloneAttribute.section);
 
-                var bodyCode = declaration.Body.ToString().Replace("{","{{").Replace("}","}}");
+                var bodyCode = declaration.Body.ToString().Replace("{", "{{").Replace("}", "}}");
                 var newCode = string.Format(
                     "{{\r\nreturn CacheHelper.FetchFromCache(\"{0}\",() => {{\r\n{3}\r\n}}, \"{1}\"{2});}}\r\n",
                     cachingPolicy, keyname, propertyKeys, bodyCode);

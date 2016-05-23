@@ -65,7 +65,7 @@ namespace Refactor
                     fileEntry.CSharpFile.SyntaxTree.Freeze();
                     var fileName = fileEntry.CSharpFile.FileName;
                     Trace.WriteLine(fileName);
-                    strategy.Refactor(fileEntry);
+                    strategy.Refactor(fileEntry, args);
                     if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
                     {
                         continue;

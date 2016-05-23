@@ -7,7 +7,7 @@ namespace Refactor
 {
     public class TryCatchRefactor : IRefactorStrategy
     {
-        public void Refactor(FileEntry entry)
+        public void Refactor(FileEntry entry, string[] args)
         {
             var script = entry.Script;
             var catchStatements =
