@@ -60,9 +60,12 @@ namespace Refactor
             projectContent = projectContent.AddOrUpdateFiles(Files.Select(f => f.UnresolvedTypeSystemForFile));
 
             // Add referenced assemblies:
-            projectContent = ResolveAssemblyReferences(MsbuildProject)
-                .Select(solution.LoadAssembly)
-                .Aggregate(projectContent, (current, assembly) => current.AddAssemblyReferences(assembly));
+            if (solution != null)
+            {
+                projectContent = ResolveAssemblyReferences(MsbuildProject)
+                    .Select(solution.LoadAssembly)
+                    .Aggregate(projectContent, (current, assembly) => current.AddAssemblyReferences(assembly));
+            }
 
             // Add project references:
             projectContent = MsbuildProject

@@ -3,11 +3,11 @@ using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem;
 
-namespace Refactor
+namespace Refactor.TryCatch
 {
-    public class TryCatchRefactor : IRefactorStrategy
+    public class TryCatchRefactorFile : IRefactorFileStrategy
     {
-        public void Refactor(FileEntry entry, string[] args)
+        public void RefactorFile(FileEntry entry)
         {
             var script = entry.Script;
             var catchStatements =

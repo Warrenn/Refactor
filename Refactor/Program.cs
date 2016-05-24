@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -15,19 +16,33 @@ namespace Refactor
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
+            var parser = new Parser(s => s.IgnoreUnknownArguments = true);
             var options = new Options();
-            if (!Parser.Default.ParseArguments(args, options))
+            if (!parser.ParseArguments(args, options))
             {
                 Environment.Exit(1);
             }
 
-            if (!File.Exists(options.Solution))
+            if (string.IsNullOrEmpty(options.Project) && string.IsNullOrEmpty(options.Solution))
+            {
+                Trace.TraceError("Either the project or the solution must be specified");
+                Environment.Exit(1);
+            }
+
+            if (string.IsNullOrEmpty(options.Solution) && !File.Exists(options.Project))
+            {
+                Trace.TraceError("The project file specified could not be found");
+                Environment.Exit(1);                
+            }
+
+            if (!File.Exists(options.Solution) && string.IsNullOrEmpty(options.Project))
             {
                 Trace.TraceError("The solution file must exist");
                 Environment.Exit(1);
             }
 
             var strategyType = StrategyType(options.Refactory);
+            object strategy;
 
             if (strategyType == null)
             {
@@ -35,62 +50,96 @@ namespace Refactor
                 Environment.Exit(1);
             }
 
-            var strategy = Activator.CreateInstance(strategyType) as IRefactorStrategy;
-
-            if (strategy == null)
+            if (strategyType.BaseType != null &&
+                strategyType.BaseType.IsGenericType &&
+                strategyType.BaseType.GetGenericTypeDefinition() == typeof (ArgsRefactorFileStrategy<>))
             {
-                Trace.TraceError("The type couldn't be cast to a valid strategy");
-                Environment.Exit(1);
+                var optionsType = strategyType.BaseType.GetGenericArguments()[0];
+                var strategyOptions = Activator.CreateInstance(optionsType);
+                if (!parser.ParseArguments(args, strategyOptions))
+                {
+                    Environment.Exit(1);
+                }
+                strategy = Activator.CreateInstance(strategyType, strategyOptions);
+            }
+            else
+            {
+                strategy = Activator.CreateInstance(strategyType);
             }
 
+            var fileStrategy = strategy as IRefactorFileStrategy;
+            var projectStrategy = strategy as IRefactorProjectStrategy;      
+
+            if ((fileStrategy == null) && (projectStrategy == null))
+            {
+                Trace.TraceError("The type couldn't be cast to a valid File Strategy or Project Strategy");
+                Environment.Exit(1);
+            }
+            
             try
             {
+                IEnumerable<CSharpProject> projects;
+
+                if (!string.IsNullOrEmpty(options.Solution))
+                {
+                    var solution = new Solution(options.Solution);
+                    projects = solution.Projects;
+                }
+                else
+                {
+                    var title = Path.GetFileNameWithoutExtension(options.Project);
+                    projects = new[] { new CSharpProject(null, title, options.Project) };
+                }
+
                 var editorOptions = new TextEditorOptions();
                 var formattingOptions = FormattingOptionsFactory.CreateAllman();
-                var solution = new Solution(options.Solution);
 
-                var fileEntries =
-                    from file in solution.AllFiles
-                    let document = new StringBuilderDocument(file.OriginalText)
-                    let script = new DocumentScript(document, formattingOptions, editorOptions)
-                    select new FileEntry
-                    {
-                        CSharpFile = file,
-                        Document = document,
-                        Script = script
-                    };
-
-                foreach (var fileEntry in fileEntries)
+                foreach (var project in projects)
                 {
-                    fileEntry.CSharpFile.SyntaxTree.Freeze();
-                    var fileName = fileEntry.CSharpFile.FileName;
-                    Trace.WriteLine(fileName);
-                    strategy.Refactor(fileEntry, args);
-                    if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
+                    if (fileStrategy == null)
+                    {
+                        projectStrategy.RefactorProject(project);
+                        continue;
+                    }
+
+                    var fileEntries =
+                        from file in project.Files
+                        let document = new StringBuilderDocument(file.OriginalText)
+                        let script = new DocumentScript(document, formattingOptions, editorOptions)
+                        select new FileEntry
+                        {
+                            CSharpFile = file,
+                            Document = document,
+                            Script = script
+                        };
+
+                    foreach (var fileEntry in fileEntries)
+                    {
+                        fileEntry.CSharpFile.SyntaxTree.Freeze();
+                        var fileName = fileEntry.CSharpFile.FileName;
+                        Trace.WriteLine(fileName);
+                        fileStrategy.RefactorFile(fileEntry);
+                        if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
+                        {
+                            continue;
+                        }
+                        try
+                        {
+                            FileManager.BackupFile(fileName);
+                            File.WriteAllText(fileName, fileEntry.Document.Text);
+                        }
+                        catch (Exception ex)
+                        {
+                            Trace.TraceError(ex.Message);
+                        }
+                    }
+
+                    if (projectStrategy == null)
                     {
                         continue;
                     }
-                    try
-                    {
-                        var fileAttributes = File.GetAttributes(fileName);
-                        if ((fileAttributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
-                        {
-                            File.SetAttributes(fileName, fileAttributes & ~FileAttributes.ReadOnly);
-                        }
 
-                        var backupName = Path.ChangeExtension(fileName, ".cs.backup");
-                        for (var i = 1; File.Exists(backupName); i++)
-                        {
-                            backupName = Path.ChangeExtension(fileName, ".cs.backup" + i);
-                        }
-
-                        File.WriteAllText(backupName, fileEntry.CSharpFile.OriginalText);
-                        File.WriteAllText(fileName, fileEntry.Document.Text);
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.TraceError(ex.Message);
-                    }
+                    projectStrategy.RefactorProject(project);
                 }
             }
             catch (Exception ex)

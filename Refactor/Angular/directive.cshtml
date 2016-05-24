@@ -1,0 +1,24 @@
+﻿@model dynamic
+(function () {
+    'use strict';
+
+    angular
+        .module('app.@Model.Area')
+        .directive('@Model.Directive', @Model.Directive);
+
+    @(Model.Directive).$inject = ['config'];
+
+    function @(Model.Directive)(config) {
+        var directive = {
+            scope: {
+            },
+            link: link,
+            templateUrl: config.baseFolder + '/@(Model.Area)/@(Model.Directive).html'
+        }
+
+        return directive;
+
+        function link(scope) {
+        }
+    }
+})();

@@ -2,11 +2,11 @@
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.Semantics;
 
-namespace Refactor
+namespace Refactor.Cacheable
 {
-    public class CacheableRefactor : IRefactorStrategy
+    public class CacheableRefactorFile : IRefactorFileStrategy
     {
-        public void Refactor(FileEntry entry, string[] args)
+        public void RefactorFile(FileEntry entry)
         {
             var script = entry.Script;
             var methodDeclarations =
