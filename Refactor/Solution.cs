@@ -18,9 +18,9 @@ namespace Refactor
 	        "Project\\(\"(?<TypeGuid>.*)\"\\)\\s+=\\s+\"(?<Title>.*)\",\\s*\"(?<Location>.*)\",\\s*\"(?<Guid>.*)\"",
 	        RegexOptions.Compiled);
 
-        public string Directory { get; }
-		public IEnumerable<CSharpProject> Projects { get; }
-		public IEnumerable<CSharpFile> AllFiles { get; }
+        public string Directory { get; private set; }
+        public IEnumerable<CSharpProject> Projects { get; private set; }
+        public IEnumerable<CSharpFile> AllFiles { get; private set; }
 
         public Solution(string fileName)
 		{

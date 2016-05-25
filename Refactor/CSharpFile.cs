@@ -25,12 +25,12 @@ namespace Refactor
 {
     public class CSharpFile
     {
-        public string FileName { get; }
-        public string OriginalText { get; }
-        public SyntaxTree SyntaxTree { get; }
-        public CSharpParser Parser { get; }
-        public CSharpProject Project { get; }
-        public CSharpUnresolvedFile UnresolvedTypeSystemForFile { get; }
+        public string FileName { get; private set; }
+        public string OriginalText { get; private set; }
+        public SyntaxTree SyntaxTree { get; private set; }
+        public CSharpParser Parser { get; private set; }
+        public CSharpProject Project { get; private set; }
+        public CSharpUnresolvedFile UnresolvedTypeSystemForFile { get; private set; }
 
         public CSharpFile(CSharpProject project, string fileName)
         {
