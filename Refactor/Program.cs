@@ -42,14 +42,13 @@ namespace Refactor
             }
 
             var strategyType = StrategyType(options.Refactory);
-            object strategy;
-
             if (strategyType == null)
             {
                 Trace.TraceError("Invalid type {0} specified ", options.Refactory);
                 Environment.Exit(1);
             }
 
+            object strategy;
             if (strategyType.BaseType != null &&
                 strategyType.BaseType.IsGenericType &&
                 strategyType.BaseType.GetGenericTypeDefinition() == typeof (ArgsRefactorFileStrategy<>))
@@ -123,15 +122,8 @@ namespace Refactor
                         {
                             continue;
                         }
-                        try
-                        {
-                            FileManager.BackupFile(fileName);
-                            File.WriteAllText(fileName, fileEntry.Document.Text);
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.TraceError(ex.Message);
-                        }
+                        FileManager.BackupFile(fileName);
+                        File.WriteAllText(fileName, fileEntry.Document.Text);
                     }
 
                     if (projectStrategy == null)
