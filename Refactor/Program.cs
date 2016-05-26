@@ -23,19 +23,7 @@ namespace Refactor
                 Environment.Exit(1);
             }
 
-            if (string.IsNullOrEmpty(options.Project) && string.IsNullOrEmpty(options.Solution))
-            {
-                Trace.TraceError("Either the project or the solution must be specified");
-                Environment.Exit(1);
-            }
-
-            if (string.IsNullOrEmpty(options.Solution) && !File.Exists(options.Project))
-            {
-                Trace.TraceError("The project file specified could not be found");
-                Environment.Exit(1);                
-            }
-
-            if (!File.Exists(options.Solution) && string.IsNullOrEmpty(options.Project))
+            if (!File.Exists(options.Solution))
             {
                 Trace.TraceError("The solution file must exist");
                 Environment.Exit(1);
@@ -52,7 +40,7 @@ namespace Refactor
 
             if (strategyType.BaseType != null &&
                 strategyType.BaseType.IsGenericType &&
-                strategyType.BaseType.GetGenericTypeDefinition() == typeof (ArgsRefactorFileStrategy<>))
+                strategyType.BaseType.GetGenericTypeDefinition() == typeof(ArgsRefactorFileStrategy<>))
             {
                 var optionsType = strategyType.BaseType.GetGenericArguments()[0];
                 var strategyOptions = Activator.CreateInstance(optionsType);
@@ -68,33 +56,25 @@ namespace Refactor
             }
 
             var fileStrategy = strategy as IRefactorFileStrategy;
-            var projectStrategy = strategy as IRefactorProjectStrategy;      
+            var projectStrategy = strategy as IRefactorProjectStrategy;
 
             if ((fileStrategy == null) && (projectStrategy == null))
             {
                 Trace.TraceError("The type couldn't be cast to a valid File Strategy or Project Strategy");
                 Environment.Exit(1);
             }
-            
+
             try
             {
-                IEnumerable<CSharpProject> projects;
-
-                if (!string.IsNullOrEmpty(options.Solution))
-                {
-                    var solution = new Solution(options.Solution);
-                    projects = solution.Projects;
-                }
-                else
-                {
-                    var title = Path.GetFileNameWithoutExtension(options.Project);
-                    projects = new[] { new CSharpProject(null, title, options.Project) };
-                }
+                var solution = new Solution(options.Solution);
+                var projects = solution.Projects;
 
                 var editorOptions = new TextEditorOptions();
                 var formattingOptions = FormattingOptionsFactory.CreateAllman();
 
-                foreach (var project in projects)
+                foreach (var project in projects.Where(p =>
+                    !string.IsNullOrEmpty(options.Project) &&
+                    options.Project == p.Title))
                 {
                     if (fileStrategy == null)
                     {
@@ -165,7 +145,7 @@ namespace Refactor
             var assemblies = domainAssemblies.Select(asmb => asmb.Location).ToArray();
             var results = CodeDomProvider
                 .CreateProvider("csharp")
-                .CompileAssemblyFromFile(new CompilerParameters(assemblies) {GenerateInMemory = true}, optionsRefactory);
+                .CompileAssemblyFromFile(new CompilerParameters(assemblies) { GenerateInMemory = true }, optionsRefactory);
 
             if (results.Errors.HasErrors)
             {

@@ -94,6 +94,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Angular\AddControllerOptions.cs" />
+    <Compile Include="Angular\AddModule.cs" />
+    <Compile Include="Angular\AddModuleOptions.cs" />
+    <Compile Include="Angular\AddDataService.cs" />
+    <Compile Include="Angular\AddDataServiceOptions.cs" />
+    <Compile Include="Angular\DataServiceViewModel.cs" />
     <Compile Include="Angular\JsAppModuleVisitor.cs" />
     <Compile Include="Angular\NgManager.cs" />
     <Compile Include="ArgsRefactorFileStrategy.cs" />
@@ -116,6 +122,7 @@
     <EmbeddedResource Include="Angular\area.module.cshtml" />
     <EmbeddedResource Include="Angular\directive.cshtml" />
     <EmbeddedResource Include="Angular\directive.html.cshtml" />
+    <EmbeddedResource Include="Angular\dataservice.cshtml" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>

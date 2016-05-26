@@ -2,7 +2,9 @@
 using System.Linq;
 using System.Text;
 using ICSharpCode.NRefactory.CSharp;
+using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.CSharp.TypeSystem;
+using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using Microsoft.Ajax.Utilities;
 
@@ -10,7 +12,7 @@ namespace Refactor.Angular
 {
     public static class NgManager
     {
-        public static void AddJsFileToBundle(FileEntry entry, string project, string area, string fileName)
+        public static bool AddJsFileToBundle(FileEntry entry, string project, string area, string fileName)
         {
             var file = entry.CSharpFile;
             var method = (
@@ -35,7 +37,7 @@ namespace Refactor.Angular
 
             if (method == null)
             {
-                return;
+                return false;
             }
 
             var creationNode = (
@@ -47,7 +49,7 @@ namespace Refactor.Angular
 
             if (creationNode == null)
             {
-                return;
+                return false;
             }
 
             var invokeExpression = (InvocationExpression)creationNode.Parent.Parent;
@@ -101,6 +103,7 @@ namespace Refactor.Angular
             }
 
             script.Replace(invokeExpression, cloneExpression);
+            return true;
         }
 
         public static void AddJsModuleToAppJs(string projectPath,string moduleName)
@@ -140,6 +143,73 @@ namespace Refactor.Angular
 
             FileManager.BackupFile(appPath);
             File.WriteAllText(appPath, output);
+        }
+
+        public static string CamelCase(string name)
+        {
+            return name.Substring(0, 1).ToLower() + name.Substring(1);
+        }
+
+        public static string GetRouteDeclaration(CSharpFile file, string routeName)
+        {
+            return (
+                from method in file.SyntaxTree.Descendants.OfType<InvocationExpression>()
+                let target = method.Target as MemberReferenceExpression
+                where
+                    target != null &&
+                    target.MemberName == "MapHttpRoute" &&
+                    method.Arguments.Count == 2
+                let namePrimitive = method.Arguments.First().Descendants.OfType<PrimitiveExpression>()
+                where
+                    namePrimitive.Any() &&
+                    namePrimitive.First().LiteralValue == routeName
+                select
+                    method
+                        .Arguments
+                        .ToArray()[1]
+                        .Descendants
+                        .OfType<PrimitiveExpression>()
+                        .First()
+                        .LiteralValue).FirstOrDefault();
+        }
+
+        public static DataServiceViewModel CreateModel(CSharpFile file, CSharpAstResolver resolver,
+            AddDataServiceOptions options)
+        {
+            var controllerDeclaration = (
+                from codetype in file.SyntaxTree.Descendants.OfType<TypeDeclaration>()
+                let resolvedType = resolver.Resolve(codetype)
+                where
+                    (resolvedType.Type.Name == options.Controller ||
+                     resolvedType.Type.Name == options.Controller + "Controller") &&
+                    resolvedType.Type.DirectBaseTypes.Any(t => t.FullName == "System.Web.Http.ApiController")
+                select resolvedType).FirstOrDefault();
+
+            if (controllerDeclaration == null)
+            {
+                return null;
+            }
+
+            return new DataServiceViewModel
+            {
+                Name = options.Controller,
+                CamelCaseName = CamelCase(options.Controller),
+                Methods = controllerDeclaration
+                    .Type
+                    .GetMethods(m =>
+                        m.IsPublic &&
+                        !m.IsStatic &&
+                        m.Attributes.All(
+                            a => ((CSharpAttribute) a).AttributeType.ToString() != "Ignore[Attribute]"),
+                        GetMemberOptions.IgnoreInheritedMembers)
+                    .Select(m => new DataServiceViewModel.MethodCall
+                    {
+                        Name = m.Name,
+                        CamelCaseName = CamelCase(m.Name),
+                        Path = m.Name,
+                        IsPost = m.Attributes.Any(a => a.AttributeType.Name == "HttpPostAttribute")
+                    }).ToArray()
+            };
         }
     }
 }

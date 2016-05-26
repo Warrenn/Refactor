@@ -31,9 +31,9 @@ namespace Refactor.Angular
                 Directory.CreateDirectory(areaPath);
             }
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.AddDirective.area.module.cshtml", options);
-            FileManager.CreateFileFromTemplate(directivePath, "Refactor.AddDirective.directive.cshtml", options);
-            FileManager.CreateFileFromTemplate(htmlPath, "Refactor.AddDirective.directive.html.cshtml", options);
+            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", options);
+            FileManager.CreateFileFromTemplate(directivePath, "Refactor.Angular.directive.cshtml", options);
+            FileManager.CreateFileFromTemplate(htmlPath, "Refactor.Angular.directive.html.cshtml", options);
 
             FileManager.AddContentToProject(project.MsbuildProject, modulepart);
             FileManager.AddContentToProject(project.MsbuildProject, directivepart);

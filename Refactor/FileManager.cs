@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -41,6 +42,11 @@ namespace Refactor
         }
 
         public static void CreateFileFromTemplate(string path, string templateName, object model)
+        {
+            CreateFileFromTemplate(path, templateName, null, model);
+        }
+
+        public static void CreateFileFromTemplate(string path, string templateName, Type modelType, object model)
         {
             if (File.Exists(path))
             {

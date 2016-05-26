@@ -17,19 +17,17 @@ namespace Refactor
         public string FileName { get; private set; }
         public CompilerSettings CompilerSettings { get; private set; }
         public IProjectContent ProjectContent { get; private set; }
-        public ICompilation Compilation { get; set; }
         public IEnumerable<CSharpFile> Files { get; private set; }
         public Project MsbuildProject { get; private set; }
         public Solution Solution { get; private set; }
+        public ICompilation Compilation { get; set; }
 
         public CSharpProject(Solution solution, string title, string fileName)
         {
             // Normalize the file name
-            fileName = Path.GetFullPath(fileName);
-
+            FileName = Path.GetFullPath(fileName);
             Solution = solution;
             Title = title;
-            FileName = fileName;
 
             // Use MSBuild to open the .csproj
             MsbuildProject = new Project(fileName);
@@ -41,7 +39,7 @@ namespace Refactor
                 CheckForOverflow = GetBoolProperty(MsbuildProject, "CheckForOverflowUnderflow") ?? false
             };
             var defineConstants = MsbuildProject.GetPropertyValue("DefineConstants");
-            foreach (var symbol in defineConstants.Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries))
+            foreach (var symbol in defineConstants.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
             {
                 CompilerSettings.ConditionalSymbols.Add(symbol.Trim());
             }
@@ -60,15 +58,12 @@ namespace Refactor
             projectContent = projectContent.AddOrUpdateFiles(Files.Select(f => f.UnresolvedTypeSystemForFile));
 
             // Add referenced assemblies:
-            if (solution != null)
-            {
-                projectContent = ResolveAssemblyReferences(MsbuildProject)
-                    .Select(solution.LoadAssembly)
-                    .Aggregate(projectContent, (current, assembly) => current.AddAssemblyReferences(assembly));
-            }
+            projectContent = ResolveAssemblyReferences(MsbuildProject)
+                .Select(solution.LoadAssembly)
+                .Aggregate(projectContent, (current, assembly) => current.AddAssemblyReferences(assembly));
 
             // Add project references:
-            projectContent = MsbuildProject
+            ProjectContent = MsbuildProject
                 .GetItems("ProjectReference")
                 .Select(item => Path.Combine(MsbuildProject.DirectoryPath, item.EvaluatedInclude))
                 .Select(Path.GetFullPath)
@@ -76,7 +71,6 @@ namespace Refactor
                     (current, referencedFileName) =>
                         current.AddAssemblyReferences(new ProjectReference(referencedFileName)));
 
-            ProjectContent = projectContent;
         }
 
         IEnumerable<string> ResolveAssemblyReferences(Project project)
