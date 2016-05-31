@@ -6,7 +6,7 @@ namespace Refactor.Angular
     {
         [Option('a', "area",
             Required = true,
-            HelpText = "the area that wil contain the new directive")]
+            HelpText = "the area that will contain the new directive")]
         public string Area { get; set; }
 
         [Option('d', "directive",

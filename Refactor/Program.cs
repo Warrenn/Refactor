@@ -110,7 +110,7 @@ namespace Refactor
                         }
                         catch (Exception ex)
                         {
-                            Trace.TraceError(ex.Message);
+                            Trace.TraceError(ex.ToString());
                         }
                     }
 
@@ -124,7 +124,7 @@ namespace Refactor
             }
             catch (Exception ex)
             {
-                Trace.TraceError(ex.Message);
+                Trace.TraceError(ex.ToString());
                 Environment.Exit(1);
             }
         }

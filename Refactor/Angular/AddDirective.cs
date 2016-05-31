@@ -31,7 +31,7 @@ namespace Refactor.Angular
                 Directory.CreateDirectory(areaPath);
             }
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", options);
+            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", new {Module = options.Area});
             FileManager.CreateFileFromTemplate(directivePath, "Refactor.Angular.directive.cshtml", options);
             FileManager.CreateFileFromTemplate(htmlPath, "Refactor.Angular.directive.html.cshtml", options);
 

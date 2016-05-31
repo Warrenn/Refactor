@@ -13,7 +13,7 @@ namespace Refactor.Angular
         private DataServiceViewModel model;
         private string routeDeclaration;
         private bool addedJsToBundle;
-        private string routeName;
+        private readonly string routeName;
 
         public AddDataService(AddDataServiceOptions options)
             : base(options)
@@ -33,7 +33,7 @@ namespace Refactor.Angular
             if (!addedJsToBundle)
             {
                 addedJsToBundle = NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, "data",
-                    options.Controller + "DataService");
+                    options.Controller.ToLower() + "dataservice");
             }
 
             if (model == null)

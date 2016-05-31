@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Evaluation;
 using RazorEngine;
+using RazorEngine.Configuration;
 using RazorEngine.Templating;
 
 namespace Refactor
@@ -52,6 +53,13 @@ namespace Refactor
             {
                 return;
             }
+            var config = new TemplateServiceConfiguration
+            {
+                DisableTempFileLocking = true,
+                CachingProvider = new DefaultCachingProvider(t => { })
+            };
+
+            Engine.Razor = RazorEngineService.Create(config);
             var moduleTemplate = GetTemplate(templateName);
             var content = Engine.Razor.RunCompile(moduleTemplate, templateName, null, model);
             File.WriteAllText(path, content);
