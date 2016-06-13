@@ -1,0 +1,47 @@
+﻿@model Refactor.Angular.DataServiceViewModel
+(function() {
+    'use strict';
+
+    angular
+        .module('app.data')
+        .factory('@(Model.CamelCaseName)DataService', @(Model.CamelCaseName)DataService);
+
+    @(Model.CamelCaseName)DataService.$inject = ['common', 'helperfunctions'];
+
+    function @(Model.CamelCaseName)DataService(common, helperfunctions) {
+        var $http = common.$http,
+            createParams = helperfunctions.createParams;
+
+        var service = {
+@foreach (var method in Model.Methods)
+{
+    
+@:          @(method.CamelCaseName + ":" + method.CamelCaseName),
+
+}
+        };
+
+        return service;
+
+@foreach (var method in Model.Methods)
+{
+@:      function @(method.CamelCaseName)(request) {
+@:          var options = {
+    if (method.IsPost)
+    {
+@:              url: '/@(method.Path)',
+@:              method: 'POST',
+@:              data: request
+    }
+    else
+    {
+@:              url: '/@(method.Path)?' + createParams(request),
+@:              method: 'GET'
+    }
+@:          };
+@:
+@:          return $http(options);
+@:      }
+}
+    }
+})();

@@ -20,7 +20,6 @@ namespace Refactor
 
         public string Directory { get; private set; }
         public IEnumerable<CSharpProject> Projects { get; private set; }
-        public IEnumerable<CSharpFile> AllFiles { get; private set; }
 
         public Solution(string fileName)
 		{
@@ -39,11 +38,6 @@ namespace Refactor
 			foreach (var project in Projects) {
 				project.Compilation = solutionSnapshot.GetCompilation(project.ProjectContent);
 			}
-
-		    AllFiles =
-		        from project in Projects
-		        from file in project.Files
-		        select file;
 		}
 
         public IUnresolvedAssembly LoadAssembly(string assemblyFileName)

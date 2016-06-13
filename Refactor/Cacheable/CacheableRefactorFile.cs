@@ -32,7 +32,7 @@ namespace Refactor.Cacheable
                 var cachingPolicy = "";
                 var propertyKeys = "";
                 var cloneDeclaration = (MethodDeclaration)declaration.Clone();
-                var keyname = ((MemberResolveResult)astResolver.Resolve(declaration)).Member.FullName;
+                var methodTemplate = ((MemberResolveResult)astResolver.Resolve(declaration)).Member.FullName;
 
                 var cloneAttribute = (
                     from section in cloneDeclaration.Attributes
@@ -58,6 +58,17 @@ namespace Refactor.Cacheable
                 if (propertyKeysPrimitive.Any())
                 {
                     propertyKeys = "," + propertyKeysPrimitive[0].Value;
+                    var parts = ((string) propertyKeysPrimitive[0].Value).Split(',');
+                    methodTemplate += " (";
+                    for (var i = 0; i < parts.Length; i++)
+                    {
+                        if (i > 0)
+                        {
+                            methodTemplate += ", ";
+                        }
+                        methodTemplate += parts[i] + ": [{" + i + "}]";
+                    }
+                    methodTemplate += ")";
                 }
 
                 if (cachingPolicies.Any())
@@ -67,10 +78,10 @@ namespace Refactor.Cacheable
 
                 cloneDeclaration.Attributes.Remove(cloneAttribute.section);
 
-                var bodyCode = declaration.Body.ToString().Replace("{", "{{").Replace("}", "}}");
+                var bodyCode = declaration.Body.ToString();
                 var newCode = string.Format(
-                    "{{\r\nreturn CacheHelper.FetchFromCache(\"{0}\",() => {{\r\n{3}\r\n}}, \"{1}\"{2});}}\r\n",
-                    cachingPolicy, keyname, propertyKeys, bodyCode);
+                    "{{\r\nreturn CacheHelper.FetchFromCache(\"{0}\",() =>\r\n{3}\r\n, \"{1}\"{2});}}\r\n",
+                    cachingPolicy, methodTemplate, propertyKeys, bodyCode);
 
                 var newBody = entry.CSharpFile.Parser.ParseStatements(newCode);
                 cloneDeclaration.Body.ReplaceWith(newBody.First());
