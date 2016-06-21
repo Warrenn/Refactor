@@ -2,7 +2,7 @@
 
 namespace Refactor.Angular
 {
-    public class AddModule : ArgsRefactorFileStrategy<AddModuleOptions>,IRefactorProjectStrategy
+    public class AddModule : ArgsRefactorFileStrategy<AddModuleOptions>, IRefactorProjectStrategy
     {
         public AddModule(AddModuleOptions options)
             : base(options)
@@ -11,7 +11,7 @@ namespace Refactor.Angular
 
         public override void RefactorFile(FileEntry entry)
         {
-            NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, options.Module, string.Empty);
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Module, string.Empty);
         }
 
         public void RefactorProject(CSharpProject project)
@@ -29,9 +29,9 @@ namespace Refactor.Angular
             }
 
             FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", options);
-            FileManager.AddContentToProject(project.MsbuildProject, modulepart);
+            FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Module);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Module, project.BackupId);
         }
     }
 }

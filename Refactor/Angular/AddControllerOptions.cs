@@ -19,9 +19,19 @@ namespace Refactor.Angular
             HelpText = "The angular controller name")]
         public string Controller { get; set; }
 
-        [Option('s', "service",
+        [Option('v', "service",
             Required = false,
             HelpText = "The service method call made by the angular controller")]
         public string Service { get; set; }
+
+        [Option('b', "bundleid",
+            Required = false,
+            HelpText = "The bundle identifier to add the javascript file references to")]
+        public string BundleId { get; set; }
+
+        [Option('j', "jsroot",
+            Required = false,
+            HelpText = "The root path of the javascript files to add")]
+        public string JsRoot { get; set; }
     }
 }

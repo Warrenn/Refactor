@@ -1,6 +1,5 @@
 ﻿using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -73,9 +72,10 @@ namespace Refactor
                 var formattingOptions = FormattingOptionsFactory.CreateAllman();
 
                 foreach (var project in projects.Where(p =>
-                    !string.IsNullOrEmpty(options.Project) &&
-                    options.Project == p.Title))
+                    string.IsNullOrEmpty(options.Project) ||
+                    string.Equals(options.Project, p.Title, StringComparison.OrdinalIgnoreCase)))
                 {
+                    project.BackupId = options.BackkupId;
                     if (fileStrategy == null)
                     {
                         projectStrategy.RefactorProject(project);
@@ -90,14 +90,14 @@ namespace Refactor
                         {
                             CSharpFile = file,
                             Document = document,
-                            Script = script
+                            Script = script,
+                            BackupId = options.BackkupId
                         };
 
                     foreach (var fileEntry in fileEntries)
                     {
                         fileEntry.CSharpFile.SyntaxTree.Freeze();
                         var fileName = fileEntry.CSharpFile.FileName;
-                        Trace.WriteLine(fileName);
                         fileStrategy.RefactorFile(fileEntry);
                         if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
                         {
@@ -105,7 +105,7 @@ namespace Refactor
                         }
                         try
                         {
-                            FileManager.BackupFile(fileName);
+                            FileManager.BackupFile(fileName, options.BackkupId);
                             File.WriteAllText(fileName, fileEntry.Document.Text);
                         }
                         catch (Exception ex)

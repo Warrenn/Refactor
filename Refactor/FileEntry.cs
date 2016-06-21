@@ -8,5 +8,6 @@ namespace Refactor
         public CSharpFile CSharpFile { get; set; }
         public Script Script { get; set; }
         public IDocument Document { get; set; }
+        public string BackupId { get; set; }
     }
 }

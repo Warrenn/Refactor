@@ -12,7 +12,80 @@ namespace Refactor.Angular
 {
     public static class NgManager
     {
-        public static bool AddJsFileToBundle(FileEntry entry, string project, string area, string fileName)
+
+        public static bool AddJsFileToNode(InvocationExpression cloneExpression, string comment, string newValue)
+        {
+            var addNewRef = true;
+            var changed = false;
+            Comment commentNode = null;
+
+            foreach (var child in cloneExpression.Children)
+            {
+                if ((child.Role == Roles.Comment) &&
+                    (string.IsNullOrEmpty(comment) || (child.ToString() == "/*" + comment + "*/")))
+                {
+                    commentNode = (Comment) child;
+                    continue;
+                }
+
+                if ((child.Role == Roles.Argument) && (child.ToString() == "\"" + newValue + "\""))
+                {
+                    addNewRef = false;
+                }
+            }
+
+            if (commentNode == null)
+            {
+                commentNode = new Comment(comment, CommentType.MultiLine);
+                cloneExpression.AddChild(commentNode, Roles.Comment);
+                changed = true;
+            }
+
+            if (!addNewRef)
+            {
+                return changed;
+            }
+
+            cloneExpression.InsertChildAfter(commentNode, new PrimitiveExpression(newValue), Roles.Argument);
+            return true;
+        }
+
+        public static bool AddJsFileToBundle(FileEntry entry, string bundleId, string jsRoot, string area,
+            string fileName)
+        {
+            var creationNode = GetBundleCreationNode(entry, bundleId);
+            if (creationNode == null)
+            {
+                return false;
+            }
+
+            var changed = false;
+            var invokeExpression = (InvocationExpression) creationNode.Parent.Parent;
+            var cloneExpression = (InvocationExpression) invokeExpression.Clone();
+            var script = entry.Script;
+
+            if (string.IsNullOrEmpty(jsRoot))
+            {
+                jsRoot = "~/Areas/" + entry.CSharpFile.Project.Title + "/";
+            }
+
+            var project = entry.CSharpFile.Project.MsbuildProject;
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + fileName + ".js",
+                    entry.BackupId);
+                changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + fileName + ".js");
+            }
+
+            FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + area + ".module.js", entry.BackupId);
+            changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + area + ".module.js") || changed;
+            script.Replace(invokeExpression, cloneExpression);
+
+            return changed;
+        }
+
+
+        public static ObjectCreateExpression GetBundleCreationNode(FileEntry entry, string bundleId)
         {
             var file = entry.CSharpFile;
             var method = (
@@ -37,76 +110,25 @@ namespace Refactor.Angular
 
             if (method == null)
             {
-                return false;
+                return null;
             }
 
+            if (string.IsNullOrEmpty(bundleId))
+            {
+                bundleId = "~/" + entry.CSharpFile.Project.Title + "/js";
+            }
+
+            bundleId = "\"" + bundleId + "\"";
             var creationNode = (
                 from node in file.SyntaxTree.Descendants.OfType<ObjectCreateExpression>()
                 from argument in node.Arguments
                 where
-                    argument.ToString() == "\"~/" + project + "/js\""
+                    argument.ToString() == bundleId
                 select node).FirstOrDefault();
-
-            if (creationNode == null)
-            {
-                return false;
-            }
-
-            var invokeExpression = (InvocationExpression)creationNode.Parent.Parent;
-            var cloneExpression = (InvocationExpression)invokeExpression.Clone();
-            var script = entry.Script;
-            Comment areaComment = null;
-            PrimitiveExpression moduleArgument = null;
-            var addFileRef = true;
-            var jsFileName = string.Empty;
-
-            if (!string.IsNullOrEmpty(fileName))
-            {
-                jsFileName ="~/Areas/" + project + "/Content/js/" + area + "/" + fileName + ".js";
-            }
-
-            var moduleFileName = "~/Areas/" + project + "/Content/js/" + area + "/" + area + ".module.js";
-
-            foreach (var child in cloneExpression.Children)
-            {
-                if ((child.Role == Roles.Comment) && (child.ToString() == "/*" + area + "*/"))
-                {
-                    areaComment = (Comment)child;
-                    continue;
-                }
-                if ((child.Role == Roles.Argument) && (child.ToString() == "\"" + moduleFileName + "\""))
-                {
-                    moduleArgument = (PrimitiveExpression)child;
-                    continue;
-                }
-                if (!string.IsNullOrEmpty(fileName) && (child.Role == Roles.Argument) && (child.ToString() == "\"" + jsFileName + "\""))
-                {
-                    addFileRef = false;
-                }
-            }
-
-            if (areaComment == null)
-            {
-                areaComment = new Comment(area, CommentType.MultiLine);
-                cloneExpression.AddChild(areaComment, Roles.Comment);
-            }
-
-            if (moduleArgument == null)
-            {
-                moduleArgument = new PrimitiveExpression(moduleFileName);
-                cloneExpression.InsertChildAfter(areaComment, moduleArgument, Roles.Argument);
-            }
-
-            if (!string.IsNullOrEmpty(fileName) && addFileRef)
-            {
-                cloneExpression.InsertChildAfter(moduleArgument, new PrimitiveExpression(jsFileName), Roles.Argument);
-            }
-
-            script.Replace(invokeExpression, cloneExpression);
-            return true;
+            return creationNode;
         }
 
-        public static void AddJsModuleToAppJs(string projectPath,string moduleName)
+        public static void AddJsModuleToAppJs(string projectPath, string moduleName, string backupId)
         {
             var appPath = Path.Combine(projectPath, "Content\\js\\app.module.js");
             if (!File.Exists(appPath))
@@ -141,7 +163,7 @@ namespace Refactor.Angular
                 return;
             }
 
-            FileManager.BackupFile(appPath);
+            FileManager.BackupFile(appPath, backupId);
             File.WriteAllText(appPath, output);
         }
 
@@ -200,7 +222,7 @@ namespace Refactor.Angular
                         m.IsPublic &&
                         !m.IsStatic &&
                         m.Attributes.All(
-                            a => ((CSharpAttribute) a).AttributeType.ToString() != "Ignore[Attribute]"),
+                            a => ((CSharpAttribute)a).AttributeType.ToString() != "Ignore[Attribute]"),
                         GetMemberOptions.IgnoreInheritedMembers)
                     .Select(m => new DataServiceViewModel.MethodCall
                     {

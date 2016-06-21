@@ -2,7 +2,7 @@
 
 namespace Refactor.Angular
 {
-    public class AddController : ArgsRefactorFileStrategy<AddControllerOptions>,IRefactorProjectStrategy
+    public class AddController : ArgsRefactorFileStrategy<AddControllerOptions>, IRefactorProjectStrategy
     {
         public AddController(AddControllerOptions options)
             : base(options)
@@ -11,7 +11,7 @@ namespace Refactor.Angular
 
         public override void RefactorFile(FileEntry entry)
         {
-            NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, options.Area, options.Controller);
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Area, options.Controller);
         }
 
         public void RefactorProject(CSharpProject project)
@@ -44,14 +44,14 @@ namespace Refactor.Angular
                 ServiceMethod = NgManager.CamelCase(serviceParts[1])
             };
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", new {Module = options.Area});
+            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", new { Module = options.Area });
             FileManager.CreateFileFromTemplate(controllerPath, "Refactor.Angular.controller.cshtml",
-                typeof (ControllerViewModel), model);
+                typeof(ControllerViewModel), model);
 
-            FileManager.AddContentToProject(project.MsbuildProject, modulepart);
-            FileManager.AddContentToProject(project.MsbuildProject, controllerpart);
+            FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, controllerpart, project.BackupId);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area, project.BackupId);
         }
     }
 }

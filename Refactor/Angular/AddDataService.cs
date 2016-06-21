@@ -8,10 +8,11 @@ using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Refactor.Angular
 {
-    public class AddDataService : ArgsRefactorFileStrategy<AddDataServiceOptions>,IRefactorProjectStrategy
+    public class AddDataService : ArgsRefactorFileStrategy<AddDataServiceOptions>, IRefactorProjectStrategy
     {
         private DataServiceViewModel model;
         private string routeDeclaration;
+        private string fileName;
         private bool addedJsToBundle;
         private readonly string routeName;
 
@@ -21,7 +22,13 @@ namespace Refactor.Angular
             model = null;
             routeDeclaration = null;
             addedJsToBundle = false;
-            routeName = "\"" + options.Project + "_DefaultApi\"";
+            routeName = options.Route;
+            if (string.IsNullOrEmpty(routeName))
+            {
+                routeName = options.Project + "_DefaultApi";
+            }
+            routeName = "\"" + routeName + "\"";
+            fileName = options.Controller.ToLower() + "dataservice";
         }
 
 
@@ -32,8 +39,7 @@ namespace Refactor.Angular
 
             if (!addedJsToBundle)
             {
-                addedJsToBundle = NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, "data",
-                    options.Controller.ToLower() + "dataservice");
+                addedJsToBundle = NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, "data", fileName);
             }
 
             if (model == null)
@@ -57,7 +63,7 @@ namespace Refactor.Angular
             }
 
             var projectPath = Path.GetDirectoryName(project.FileName);
-            var servicePart = "Content\\js\\data\\" + options.Controller.ToLower() + "dataservice.js";
+            var servicePart = "Content\\js\\data\\" + fileName;
             var servicePath = Path.Combine(projectPath, servicePart);
             routeDeclaration = routeDeclaration.Replace("\"", "");
             model.Methods = model
@@ -71,8 +77,8 @@ namespace Refactor.Angular
                 });
 
             FileManager.CreateFileFromTemplate(servicePath, "Refactor.Angular.dataservice.cshtml",
-                typeof (DataServiceViewModel), model);
-            FileManager.AddContentToProject(project.MsbuildProject, servicePart);
+                typeof(DataServiceViewModel), model);
+            FileManager.AddContentToProject(project.MsbuildProject, servicePart, project.BackupId);
         }
     }
 }

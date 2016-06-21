@@ -9,8 +9,8 @@ namespace Refactor.Angular
         }
 
         public override void RefactorFile(FileEntry entry)
-        {
-            NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, options.Area, options.Directive);
+        {    
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Area, options.Directive);
         }
 
         public void RefactorProject(CSharpProject project)
@@ -35,11 +35,11 @@ namespace Refactor.Angular
             FileManager.CreateFileFromTemplate(directivePath, "Refactor.Angular.directive.cshtml", options);
             FileManager.CreateFileFromTemplate(htmlPath, "Refactor.Angular.directive.html.cshtml", options);
 
-            FileManager.AddContentToProject(project.MsbuildProject, modulepart);
-            FileManager.AddContentToProject(project.MsbuildProject, directivepart);
-            FileManager.AddContentToProject(project.MsbuildProject, htmlpart);
+            FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, directivepart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, htmlpart, project.BackupId);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area, project.BackupId);
         }
     }
 }

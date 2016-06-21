@@ -21,6 +21,7 @@ namespace Refactor
         public Project MsbuildProject { get; private set; }
         public Solution Solution { get; private set; }
         public ICompilation Compilation { get; set; }
+        public string BackupId { get; set; }
 
         public CSharpProject(Solution solution, string title, string fileName)
         {
