@@ -7,30 +7,47 @@ using ICSharpCode.NRefactory.CSharp.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using Microsoft.Ajax.Utilities;
+using AstNode = ICSharpCode.NRefactory.CSharp.AstNode;
 
 namespace Refactor.Angular
 {
     public static class NgManager
     {
 
-        public static bool AddJsFileToNode(InvocationExpression cloneExpression, string comment, string newValue)
+        public static bool AddJsFileToNode(InvocationExpression cloneExpression, string comment, string newValue, bool firstInGroup = false)
         {
             var addNewRef = true;
             var changed = false;
+            var foundLastNode = false;
             Comment commentNode = null;
+            AstNode lastNode = null;
 
             foreach (var child in cloneExpression.Children)
             {
                 if ((child.Role == Roles.Comment) &&
                     (string.IsNullOrEmpty(comment) || (child.ToString() == "/*" + comment + "*/")))
                 {
-                    commentNode = (Comment) child;
-                    continue;
+                    commentNode = (Comment)child;
                 }
 
                 if ((child.Role == Roles.Argument) && (child.ToString() == "\"" + newValue + "\""))
                 {
                     addNewRef = false;
+                }
+
+                if (foundLastNode)
+                {
+                    continue;
+                }
+
+                if (child.Role == Roles.Argument)
+                {
+                    lastNode = child;
+                }
+
+                if ((child.Role == Roles.Comment) && (commentNode != null))
+                {
+                    foundLastNode = true;
                 }
             }
 
@@ -38,6 +55,7 @@ namespace Refactor.Angular
             {
                 commentNode = new Comment(comment, CommentType.MultiLine);
                 cloneExpression.AddChild(commentNode, Roles.Comment);
+                lastNode = commentNode;
                 changed = true;
             }
 
@@ -46,7 +64,10 @@ namespace Refactor.Angular
                 return changed;
             }
 
-            cloneExpression.InsertChildAfter(commentNode, new PrimitiveExpression(newValue), Roles.Argument);
+            lastNode = lastNode ?? commentNode;
+            var afterNode = firstInGroup ? commentNode : lastNode;
+
+            cloneExpression.InsertChildAfter(afterNode, new PrimitiveExpression(newValue), Roles.Argument);
             return true;
         }
 
@@ -60,8 +81,8 @@ namespace Refactor.Angular
             }
 
             var changed = false;
-            var invokeExpression = (InvocationExpression) creationNode.Parent.Parent;
-            var cloneExpression = (InvocationExpression) invokeExpression.Clone();
+            var invokeExpression = (InvocationExpression)creationNode.Parent.Parent;
+            var cloneExpression = (InvocationExpression)invokeExpression.Clone();
             var script = entry.Script;
 
             if (string.IsNullOrEmpty(jsRoot))
@@ -72,13 +93,13 @@ namespace Refactor.Angular
             var project = entry.CSharpFile.Project.MsbuildProject;
             if (!string.IsNullOrEmpty(fileName))
             {
-                FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + fileName + ".js",
+                FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + fileName,
                     entry.BackupId);
-                changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + fileName + ".js");
+                changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + fileName);
             }
 
             FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + area + ".module.js", entry.BackupId);
-            changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + area + ".module.js") || changed;
+            changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + area + ".module.js", true) || changed;
             script.Replace(invokeExpression, cloneExpression);
 
             return changed;
@@ -193,45 +214,6 @@ namespace Refactor.Angular
                         .OfType<PrimitiveExpression>()
                         .First()
                         .LiteralValue).FirstOrDefault();
-        }
-
-        public static DataServiceViewModel CreateModel(CSharpFile file, CSharpAstResolver resolver,
-            AddDataServiceOptions options)
-        {
-            var controllerDeclaration = (
-                from codetype in file.SyntaxTree.Descendants.OfType<TypeDeclaration>()
-                let resolvedType = resolver.Resolve(codetype)
-                where
-                    (resolvedType.Type.Name == options.Controller ||
-                     resolvedType.Type.Name == options.Controller + "Controller") &&
-                    resolvedType.Type.DirectBaseTypes.Any(t => t.FullName == "System.Web.Http.ApiController")
-                select resolvedType).FirstOrDefault();
-
-            if (controllerDeclaration == null)
-            {
-                return null;
-            }
-
-            return new DataServiceViewModel
-            {
-                Name = options.Controller,
-                CamelCaseName = CamelCase(options.Controller),
-                Methods = controllerDeclaration
-                    .Type
-                    .GetMethods(m =>
-                        m.IsPublic &&
-                        !m.IsStatic &&
-                        m.Attributes.All(
-                            a => ((CSharpAttribute)a).AttributeType.ToString() != "Ignore[Attribute]"),
-                        GetMemberOptions.IgnoreInheritedMembers)
-                    .Select(m => new DataServiceViewModel.MethodCall
-                    {
-                        Name = m.Name,
-                        CamelCaseName = CamelCase(m.Name),
-                        Path = m.Name,
-                        IsPost = m.Attributes.Any(a => a.AttributeType.Name == "HttpPostAttribute")
-                    }).ToArray()
-            };
         }
     }
 }

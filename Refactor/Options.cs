@@ -22,6 +22,6 @@ namespace Refactor
         [Option('k', "backupid",
             Required = false,
             HelpText = "Backup id is used to prevent overriding of previous backups and to keep the backup of changes in sync.")]
-        public string BackkupId { get; set; }
+        public string BackupId { get; set; }
     }
 }

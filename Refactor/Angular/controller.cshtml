@@ -23,13 +23,13 @@
             errorData: {}
         };
         vm.response = {
-            totalRecords: 0,
-            data: []
+            count: 0,
+            results: []
         };
         vm.request = {
             skip: 0,
             take: pageSize,
-            filter: ''
+            filter: {}
         };
         vm.loadData = loadData;
         vm.keypress = keypress;
@@ -57,7 +57,7 @@
                 request = {
                     skip: 0,
                     take: pageSize,
-                    filter: ''
+                    filter: {}
                 };
             }
             vm.request = request;

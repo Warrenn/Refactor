@@ -12,27 +12,67 @@ namespace Refactor
 {
     public static class FileManager
     {
-        public static void BackupFile(string fileName, string backupId)
+        public static void CopyIfChanged(FileEntry fileEntry, string backupId)
         {
-            var fileAttributes = File.GetAttributes(fileName);
-            var extension = Path.GetExtension(fileName);
-            var newExtension = string.IsNullOrEmpty(backupId)
-                ? extension + "." + backupId + ".backup"
-                : extension + ".backup";
-            if ((fileAttributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+            if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
             {
-                File.SetAttributes(fileName, fileAttributes & ~FileAttributes.ReadOnly);
+                return;
             }
 
-            var backupName = Path.ChangeExtension(fileName, newExtension);
-            for (var i = 1; File.Exists(backupName); i++)
+            try
             {
-                backupName = Path.ChangeExtension(fileName, extension + "." + i + ".backup");
+                BackupFile(fileEntry.CSharpFile.FileName, backupId);
+                File.WriteAllText(fileEntry.CSharpFile.FileName, fileEntry.Document.Text);
             }
+            catch (Exception ex)
+            {
+                Trace.TraceError(ex.ToString());
+            }
+        }
+
+        public static void BackupFile(string fileName, string backupId)
+        {
+            var extension = Path.GetExtension(fileName);
+            var newExtension = string.IsNullOrEmpty(backupId)
+                ? extension + ".backup"
+                : extension + "." + backupId + ".backup";
+            var backupName = Path.ChangeExtension(fileName, newExtension);
+
+            DisableReadOnly(fileName);
+            BackupTheBackup(backupName);
 
             var contents = File.ReadAllText(fileName);
             Trace.WriteLine(fileName);
             File.WriteAllText(backupName, contents);
+        }
+
+        private static void BackupTheBackup(string backupFileName)
+        {
+            if (!File.Exists(backupFileName))
+            {
+                return;
+            }
+
+            var original = backupFileName;
+            DisableReadOnly(original);
+
+            for (var i = 1; File.Exists(backupFileName); i++)
+            {
+                backupFileName = Path.ChangeExtension(original, "." + i + ".backup");
+            }
+
+            var contents = File.ReadAllText(original);
+            File.WriteAllText(backupFileName, contents);
+        }
+
+        private static void DisableReadOnly(string fileName)
+        {
+            var fileAttributes = File.GetAttributes(fileName);
+
+            if ((fileAttributes & FileAttributes.ReadOnly) == FileAttributes.ReadOnly)
+            {
+                File.SetAttributes(fileName, fileAttributes & ~FileAttributes.ReadOnly);
+            }
         }
 
         public static string GetTemplate(string templateName)
@@ -67,6 +107,11 @@ namespace Refactor
             var moduleTemplate = GetTemplate(templateName);
             var content = Engine.Razor.RunCompile(moduleTemplate, templateName, modelType, model);
             Trace.WriteLine(path);
+            var directory = Path.GetDirectoryName(path);
+            if (!Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
             File.WriteAllText(path, content);
         }
 

@@ -46,7 +46,7 @@ namespace Refactor.Angular
             }
 
             FileManager.CreateFileFromTemplate(appJsPath, "Refactor.Angular.app.module.cshtml", null);
-            NgManager.AddJsFileToNode(cloneExpression, "app", "app.module.js");
+            NgManager.AddJsFileToNode(cloneExpression, "app", "app.module.js", true);
             FileManager.AddContentToProject(project, "Content\\js\\app.module.js", entry.BackupId);
 
             foreach (var directory in Directory.GetDirectories(jsPath))
@@ -74,7 +74,7 @@ namespace Refactor.Angular
                 strategy.RefactorProject(entry.CSharpFile.Project);
 
                 NgManager.AddJsFileToNode(cloneExpression, folderName,
-                    jsRoot + "Content/js/" + folderName + "/" + folderName + ".module.js");
+                    jsRoot + "Content/js/" + folderName + "/" + folderName + ".module.js", true);
             }
 
             script.Replace(invokeExpression, cloneExpression);

@@ -11,7 +11,7 @@ namespace Refactor.Angular
 
         public override void RefactorFile(FileEntry entry)
         {
-            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Area, options.Controller);
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Area, options.Controller + ".js");
         }
 
         public void RefactorProject(CSharpProject project)

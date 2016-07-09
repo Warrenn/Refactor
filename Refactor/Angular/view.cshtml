@@ -1,0 +1,42 @@
+﻿@model Refactor.Angular.ViewViewModel
+@foreach(var name in Model.Usings)
+{
+@:@@using @name;
+}
+@@model @(Model.Type)
+@@{
+    ViewBag.Title = "@(Model.Title)";
+}
+<div ng-controller="@(Model.ControllerName) as vm" class="ng-cloak" ng-cloak>
+    <div class="@(Model.Prefix)-crumbs-container">
+        <div class="@(Model.Prefix)-buttons-container">
+            <a href="" ng-disabled="vm.state.loading" ng-class="{disabled_link:vm.state.loading}" class="btn secondary">Add @(Model.ResultName)</a>
+        </div>
+        <fieldset class="@(Model.Prefix)-search-container">
+            <input type="text" class="@(Model.Prefix)-search-textbox" ng-keypress="vm.keypress($event)" ng-model="vm.request.filter" placeholder="Search" autofocus/>
+            <span class="@(Model.Prefix)-icon @(Model.Prefix)-icon-search" ng-click="vm.loadData(vm.request)"></span>
+        </fieldset>
+    </div>
+    <div class="@(Model.Prefix)-data-container">
+        <loading ng-if="vm.state.loading && !vm.state.error"></loading>
+        <overlay ng-if="!vm.state.loading && !vm.state.error && !vm.response.results.length">
+            <div class="dialog-text-container">No data available for request</div>
+        </overlay>
+        <section ng-if="vm.response.results && vm.response.results.length">
+            <div class="@(Model.Prefix)-data-row" ng-repeat="row in vm.response.results">
+                @foreach (string property in Model.Properties)
+                {
+                    <div class="@(Model.Prefix)-detail">{{row.@property}}</div>
+                }
+            </div>
+        </section>
+        <paging disable-links="vm.state.loading" ng-if="vm.response.count > vm.request.take" response="vm.response" request="vm.request" fetch-function="vm.loadData($event)"></paging>
+    </div>
+</div>
+<script type="text/javascript">
+    angular
+        .module('app')
+        .constant('serverSideData', {
+            filter: @@Html.ToJsonString(Model)
+        });
+</script>

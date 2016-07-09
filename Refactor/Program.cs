@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -12,6 +13,24 @@ namespace Refactor
 {
     class Program
     {
+        public static IEnumerable<FileEntry> GetFileEntries(CSharpProject project, string backupId)
+        {
+            var editorOptions = new TextEditorOptions();
+            var formattingOptions = FormattingOptionsFactory.CreateAllman();
+
+            return
+                from file in project.Files
+                let document = new StringBuilderDocument(file.OriginalText)
+                let script = new DocumentScript(document, formattingOptions, editorOptions)
+                select new FileEntry
+                {
+                    CSharpFile = file,
+                    Document = document,
+                    Script = script,
+                    BackupId = backupId
+                };
+        }
+
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
@@ -68,50 +87,22 @@ namespace Refactor
                 var solution = new Solution(options.Solution);
                 var projects = solution.Projects;
 
-                var editorOptions = new TextEditorOptions();
-                var formattingOptions = FormattingOptionsFactory.CreateAllman();
-
                 foreach (var project in projects.Where(p =>
                     string.IsNullOrEmpty(options.Project) ||
                     string.Equals(options.Project, p.Title, StringComparison.OrdinalIgnoreCase)))
                 {
-                    project.BackupId = options.BackkupId;
+                    project.BackupId = options.BackupId;
                     if (fileStrategy == null)
                     {
                         projectStrategy.RefactorProject(project);
                         continue;
                     }
 
-                    var fileEntries =
-                        from file in project.Files
-                        let document = new StringBuilderDocument(file.OriginalText)
-                        let script = new DocumentScript(document, formattingOptions, editorOptions)
-                        select new FileEntry
-                        {
-                            CSharpFile = file,
-                            Document = document,
-                            Script = script,
-                            BackupId = options.BackkupId
-                        };
-
-                    foreach (var fileEntry in fileEntries)
+                    foreach (var fileEntry in GetFileEntries(project, options.BackupId))
                     {
                         fileEntry.CSharpFile.SyntaxTree.Freeze();
-                        var fileName = fileEntry.CSharpFile.FileName;
                         fileStrategy.RefactorFile(fileEntry);
-                        if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            FileManager.BackupFile(fileName, options.BackkupId);
-                            File.WriteAllText(fileName, fileEntry.Document.Text);
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.TraceError(ex.ToString());
-                        }
+                        FileManager.CopyIfChanged(fileEntry, options.BackupId);
                     }
 
                     if (projectStrategy == null)

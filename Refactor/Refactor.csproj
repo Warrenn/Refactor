@@ -116,11 +116,15 @@
     <Compile Include="Angular\AddDataServiceOptions.cs" />
     <Compile Include="Angular\AddController.cs" />
     <Compile Include="Angular\ControllerViewModel.cs" />
+    <Compile Include="Angular\ViewViewModel.cs" />
+    <Compile Include="Angular\WireUpOptions.cs" />
+    <Compile Include="Angular\WireUp.cs" />
     <Compile Include="Angular\UpdateBundle.cs" />
     <Compile Include="Angular\UpdateBundleOptions.cs" />
     <Compile Include="Angular\DataServiceViewModel.cs" />
     <Compile Include="Angular\JsAppModuleVisitor.cs" />
     <Compile Include="Angular\NgManager.cs" />
+    <Compile Include="Angular\WireUpViewModel.cs" />
     <Compile Include="ArgsRefactorFileStrategy.cs" />
     <Compile Include="Cacheable\CacheableRefactorFile.cs" />
     <Compile Include="CSharpFile.cs" />
@@ -144,6 +148,9 @@
     <EmbeddedResource Include="Angular\dataservice.cshtml" />
     <EmbeddedResource Include="Angular\controller.cshtml" />
     <EmbeddedResource Include="Angular\app.module.cshtml" />
+    <EmbeddedResource Include="Angular\webapi.cshtml" />
+    <EmbeddedResource Include="Angular\mvccontroller.cshtml" />
+    <EmbeddedResource Include="Angular\view.cshtml" />
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>

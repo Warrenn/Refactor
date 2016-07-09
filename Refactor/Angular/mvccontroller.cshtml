@@ -1,0 +1,34 @@
+﻿@model Refactor.Angular.WireUpViewModel 
+using System.Web.Mvc;
+@foreach(var name in Model.Usings)
+{
+@:using @name;
+}
+
+namespace @(Model.Project.MsbuildProject.GetPropertyValue("RootNamespace")).Controllers
+{
+    public class @(Model.Name)Controller : Controller
+    {
+        private readonly @(Model.Type.Name) service;
+
+        public @(Model.Name)Controller(@(Model.Type.Name) service)
+        {
+            this.service = service;
+        }
+
+        @foreach (var method in Model.Methods)
+        {
+            if (!method.IsPageMethod)
+            {
+                continue;
+            }
+        <text>
+        [HttpGet]
+        public virtual ActionResult @(method.Name)(@Raw(method.ParameterStrings.FirstOrDefault()))
+        {
+            return View(@(method.Parameters.Select(p=>p.Name).FirstOrDefault()));
+        }
+        </text>
+        }
+   }
+}

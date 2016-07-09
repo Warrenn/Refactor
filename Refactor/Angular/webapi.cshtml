@@ -1,0 +1,44 @@
+﻿@model Refactor.Angular.WireUpViewModel 
+using System.Web.Http;
+@foreach(var name in Model.Usings)
+{
+@:using @name;
+}
+
+namespace @(Model.Project.MsbuildProject.GetPropertyValue("RootNamespace")).Controllers
+{
+    public class @(Model.Name)ApiController : ApiController
+    {
+        private readonly @(Model.Type.Name) service;
+
+        public @(Model.Name)ApiController(@(Model.Type.Name) service)
+        {
+            this.service = service;
+        }
+
+        @foreach (var method in Model.Methods)
+        {
+            if (method.IsPageMethod)
+            {
+        <text>
+        [HttpGet]
+        public @Raw(method.ReturnTypeName) @(method.Name)(@Raw(string.Join(",", method.ParameterStrings.Select(s => "[FromUri] " + s).ToArray())))
+        {
+            return service.@(method.Name)(@(string.Join(",", method.Parameters.Select(m => m.Name))));
+        }
+        </text>
+            }
+            else
+            {
+        <text>
+        [HttpPost]
+        public @Raw(method.ReturnTypeName) @(method.Name)(@Raw(string.Join(",", method.ParameterStrings.ToArray())))
+        {
+            return service.@(method.Name)(@(string.Join(",", method.Parameters.Select(m => m.Name))));
+        }
+        </text>
+            }
+
+        }
+   }
+}
