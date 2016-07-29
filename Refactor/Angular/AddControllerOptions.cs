@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
+﻿using CommandLine;
 
 namespace Refactor.Angular
 {
@@ -33,5 +28,10 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The root path of the javascript files to add")]
         public string JsRoot { get; set; }
+
+        [Option('l', "template",
+            Required = false,
+            HelpText = "The directory where the cshtml templates are stored")]
+        public string Template { get; set; }
     }
 }

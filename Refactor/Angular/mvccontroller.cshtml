@@ -9,12 +9,6 @@ namespace @(Model.Project.MsbuildProject.GetPropertyValue("RootNamespace")).Cont
 {
     public class @(Model.Name)Controller : Controller
     {
-        private readonly @(Model.Type.Name) service;
-
-        public @(Model.Name)Controller(@(Model.Type.Name) service)
-        {
-            this.service = service;
-        }
 
         @foreach (var method in Model.Methods)
         {

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Refactoring;
 using ICSharpCode.NRefactory.CSharp.Resolver;
@@ -136,6 +138,7 @@ namespace Refactor.Angular
 
             if (serviceDeclaration == null || bundleNode == null)
             {
+                Trace.TraceError("Couldn't find the service or bundle declaration");
                 return;
             }
 
@@ -176,13 +179,15 @@ namespace Refactor.Angular
             var jsRoot = options.JsRoot;
             var invokeExpression = (InvocationExpression)bundleNode.Parent.Parent;
             var cloneExpression = (InvocationExpression)invokeExpression.Clone();
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
 
             if (string.IsNullOrEmpty(jsRoot))
             {
                 jsRoot = "~/Areas/" + project.Title + "/";
             }
 
-            FileManager.CreateFileFromTemplate(appJsPath, "Refactor.Angular.app.module.cshtml", null);
+            FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions(), templatePath);
             var addModule = new AddModule(new AddModuleOptions
             {
                 BundleId = options.BundleId,
@@ -213,20 +218,18 @@ namespace Refactor.Angular
 
             addDataService.RefactorProject(project);
             NgManager.AddJsFileToNode(cloneExpression, "data",
-                jsRoot + "Content/js/data/" + viewModel.Name.ToLower() + "apidataservice.js");
+                jsRoot + "Content/js/data/" + viewModel.Name.ToLower() + "ApiDataService.js");
 
             if (apiControllerDeclaration == null)
             {
-                FileManager.CreateFileFromTemplate(apiControllerPath, "Refactor.Angular.webapi.cshtml",
-                    typeof(WireUpViewModel), viewModel);
-                FileManager.AddContentToProject(project.MsbuildProject, apiControllerPart, project.BackupId);
+                FileManager.CreateFileFromTemplate(apiControllerPath, "webapi.cshtml", viewModel, templatePath);
+                FileManager.AddCompileToProject(project.MsbuildProject, apiControllerPart, project.BackupId);
             }
 
             if (mvcControllerDeclaration == null)
             {
-                FileManager.CreateFileFromTemplate(mvcControllerPath, "Refactor.Angular.mvccontroller.cshtml",
-                    typeof(WireUpViewModel), viewModel);
-                FileManager.AddContentToProject(project.MsbuildProject, mvcControllerPart, project.BackupId);
+                FileManager.CreateFileFromTemplate(mvcControllerPath, "mvccontroller.cshtml", viewModel, templatePath);
+                FileManager.AddCompileToProject(project.MsbuildProject, mvcControllerPart, project.BackupId);
             }
 
             foreach (var method in viewModel.Methods.Where(method =>
@@ -238,22 +241,31 @@ namespace Refactor.Angular
                 method.ReturnType.TypeArguments.Count() == 1))
             {
                 var controller = method.CamelCaseName;
+                var path = jsRoot + "Content/js/" + viewModel.CamelCaseName + "/" + controller + ".js";
                 var addController = new AddController(new AddControllerOptions
                 {
                     Area = viewModel.CamelCaseName,
                     Controller = controller,
-                    Service = viewModel.CamelCaseName + "DataService." + method.CamelCaseName
+                    Service = viewModel.CamelCaseName + "ApiDataService." + method.CamelCaseName
                 });
                 addController.RefactorProject(project);
+
+                NgManager.AddJsFileToNode(cloneExpression, viewModel.CamelCaseName, path);
 
                 var viewViewModel = new ViewViewModel
                 {
                     CamelCaseName = method.CamelCaseName,
                     ControllerName = controller + "Controller",
-                    Type = GetTypeName(method.Parameters.First().Parameter.Type.TypeArguments.First()),
+                    Type = GetTypeName(method.Parameters.First().Parameter.Type),
                     Name = method.Name,
                     ResultName = GetTypeName(method.ReturnType.TypeArguments.First()),
                     Prefix = viewModel.CamelCaseName,
+                    PropertyNames = method
+                        .ReturnType
+                        .TypeArguments
+                        .First()
+                        .GetProperties(p => p.IsPublic && p.CanGet && p.CanSet, GetMemberOptions.IgnoreInheritedMembers)
+                        .Select(p => NgManager.SplitByCase(p.Name)),
                     Properties = method
                         .ReturnType
                         .TypeArguments
@@ -266,13 +278,12 @@ namespace Refactor.Angular
                 var cshtmlPart = "Views\\" + viewModel.Name + "\\" + method.Name + ".cshtml";
                 var cshtmlPath = Path.Combine(projectPath, cshtmlPart);
 
-                FileManager.CreateFileFromTemplate(cshtmlPath, "Refactor.Angular.view.cshtml", typeof(ViewViewModel),
-                    viewViewModel);
+                FileManager.CreateFileFromTemplate(cshtmlPath, "view.cshtml", viewViewModel, templatePath);
                 FileManager.AddContentToProject(project.MsbuildProject, cshtmlPart, project.BackupId);
             }
 
             NgManager.AddJsFileToNode(cloneExpression, viewModel.CamelCaseName,
-                jsRoot + "Content/js/" + viewModel.Name + "/" + viewModel.CamelCaseName + ".module.js", true);
+                jsRoot + "Content/js/" + viewModel.CamelCaseName + "/" + viewModel.CamelCaseName + ".module.js", true);
 
             bundleFileEntry.Script.Replace(invokeExpression, cloneExpression);
             FileManager.CopyIfChanged(bundleFileEntry, project.BackupId);
@@ -280,38 +291,28 @@ namespace Refactor.Angular
 
         private IEnumerable<string> GetUsings(IType type)
         {
-            var list = new List<string>();
-            list.Add(type.Namespace);
-            var nameSpaces =
-                from method in type.GetMethods(m => true, GetMemberOptions.None)
-                from typeArgument in method.TypeArguments
+            var list = new List<string> {type.Namespace};
+            list.AddRange(
+                from method in type.GetMethods(m => true)
+                let returnType = method.ReturnType
+                select returnType.Namespace);
+            list.AddRange(
+                from method in type.GetMethods(m => true)
+                let returnType = method.ReturnType
+                from typeArgument in returnType.TypeArguments
+                select typeArgument.Namespace);
+            list.AddRange(
+                from method in type.GetMethods(m => true)
                 from parameter in method.Parameters
-                from parameterTypeArgument in parameter.Type.TypeArguments
-                select new
-                {
-                    returnNamespace = method.ReturnType.Namespace,
-                    typeArgumentNamespace = typeArgument.Namespace,
-                    parameterNamespace = parameter.Type.Namespace,
-                    parameterTypeArgumentNamespace = parameterTypeArgument.Namespace
-                };
-
-            Action<string> addMissingNamespace = n =>
-            {
-                if (list.Contains(n))
-                {
-                    return;
-                }
-                list.Add(n);
-            };
-
-            foreach (var name in nameSpaces)
-            {
-                addMissingNamespace(name.returnNamespace);
-                addMissingNamespace(name.typeArgumentNamespace);
-                addMissingNamespace(name.parameterNamespace);
-                addMissingNamespace(name.parameterTypeArgumentNamespace);
-            }
-            return list;
+                let parameterType = parameter.Type
+                select parameterType.Namespace);
+            list.AddRange(
+                from method in type.GetMethods(m => true)
+                from parameter in method.Parameters
+                let parameterType = parameter.Type
+                from typeArgument in parameterType.TypeArguments
+                select typeArgument.Namespace);
+            return list.Distinct();
         }
     }
 }

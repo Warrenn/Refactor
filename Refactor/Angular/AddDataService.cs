@@ -1,4 +1,4 @@
-﻿using System.CodeDom;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -29,9 +29,9 @@ namespace Refactor.Angular
             addedJsToBundle = false;
             routeName = CreateRouteName(options.Route, options.Project);
             controllerName = options.Controller.Replace("Controller", "");
-            fileName = controllerName.ToLower() + "dataservice.js";
+            fileName = NgManager.CamelCase(controllerName) + "DataService.js";
         }
-
+        
         public static string CreateRouteName(string route, string project)
         {
             if (string.IsNullOrEmpty(route))
@@ -94,8 +94,7 @@ namespace Refactor.Angular
                     .GetMethods(m =>
                         m.IsPublic &&
                         !m.IsStatic &&
-                        m.Attributes.All(
-                            a => ((CSharpAttribute) a).AttributeType.ToString() != "Ignore[Attribute]"),
+                        m.Attributes.All(a => ((CSharpAttribute) a).AttributeType.ToString() != "Ignore[Attribute]"),
                         GetMemberOptions.IgnoreInheritedMembers)
                     .Select(m => new DataServiceViewModel.MethodCall
                     {
@@ -119,8 +118,11 @@ namespace Refactor.Angular
         {
             if ((Model == null) || string.IsNullOrEmpty(RouteDeclaration))
             {
+                Trace.TraceError("The model or route could not be found");
                 return;
             }
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
             var projectPath = Path.GetDirectoryName(project.FileName);
             var servicePart = "Content\\js\\data\\" + fileName;
             var servicePath = Path.Combine(projectPath, servicePart);
@@ -133,8 +135,7 @@ namespace Refactor.Angular
                     return m;
                 });
 
-            FileManager.CreateFileFromTemplate(servicePath, "Refactor.Angular.dataservice.cshtml",
-                typeof (DataServiceViewModel), Model);
+            FileManager.CreateFileFromTemplate(servicePath, "dataservice.cshtml", Model, templatePath);
             FileManager.AddContentToProject(project.MsbuildProject, servicePart, project.BackupId);
         }
     }

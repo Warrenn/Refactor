@@ -1,9 +1,9 @@
 ﻿@model Refactor.Angular.ViewViewModel
-@foreach(var name in Model.Usings)
+@foreach (var name in Model.Usings)
 {
 @:@@using @name;
 }
-@@model @(Model.Type)
+@@model @Raw(Model.Type)
 @@{
     ViewBag.Title = "@(Model.Title)";
 }
@@ -23,12 +23,24 @@
             <div class="dialog-text-container">No data available for request</div>
         </overlay>
         <section ng-if="vm.response.results && vm.response.results.length">
-            <div class="@(Model.Prefix)-data-row" ng-repeat="row in vm.response.results">
-                @foreach (string property in Model.Properties)
-                {
-                    <div class="@(Model.Prefix)-detail">{{row.@property}}</div>
-                }
-            </div>
+            <table>
+                <thead>
+                    <tr>
+                        @foreach (string propertyName in Model.PropertyNames)
+                        {
+                            <th>@propertyName</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="@(Model.Prefix)-data-row" ng-repeat="row in vm.response.results">
+                        @foreach (string property in Model.Properties)
+                        {
+                            <td class="@(Model.Prefix)-detail">{{row.@property}}</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
         </section>
         <paging disable-links="vm.state.loading" ng-if="vm.response.count > vm.request.take" response="vm.response" request="vm.request" fetch-function="vm.loadData($event)"></paging>
     </div>
@@ -37,6 +49,6 @@
     angular
         .module('app')
         .constant('serverSideData', {
-            filter: @@Html.ToJsonString(Model)
+            request: @@Html.ToJsonString(Model)
         });
 </script>

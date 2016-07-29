@@ -116,6 +116,7 @@
     <Compile Include="Angular\AddDataServiceOptions.cs" />
     <Compile Include="Angular\AddController.cs" />
     <Compile Include="Angular\ControllerViewModel.cs" />
+    <Compile Include="Angular\AddDirectiveViewModel.cs" />
     <Compile Include="Angular\ViewViewModel.cs" />
     <Compile Include="Angular\WireUpOptions.cs" />
     <Compile Include="Angular\WireUp.cs" />

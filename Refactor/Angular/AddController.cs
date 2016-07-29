@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 
 namespace Refactor.Angular
 {
@@ -18,13 +19,14 @@ namespace Refactor.Angular
         {
             var projectPath = Path.GetDirectoryName(project.FileName);
             var areapart = "Content\\js\\" + options.Area;
-            var modulepart = areapart + "\\" + options.Area + ".module.js";
+            var modulepart = areapart + "\\" + NgManager.CamelCase(options.Area) + ".module.js";
             var controllerpart = areapart + "\\" + NgManager.CamelCase(options.Controller) + ".js";
             var serviceParts = options.Service.Split('.');
-
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
             var controllerPath = Path.Combine(projectPath, controllerpart);
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
 
             if (!Directory.Exists(areaPath))
             {
@@ -33,6 +35,7 @@ namespace Refactor.Angular
 
             if (serviceParts.Length != 2)
             {
+                Trace.TraceError("Service was not in the correct format needs to be servicename.methodname format.");
                 return;
             }
 
@@ -44,9 +47,9 @@ namespace Refactor.Angular
                 ServiceMethod = NgManager.CamelCase(serviceParts[1])
             };
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", new { Module = options.Area });
-            FileManager.CreateFileFromTemplate(controllerPath, "Refactor.Angular.controller.cshtml",
-                typeof(ControllerViewModel), model);
+            FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml",
+                new AddModuleOptions {Module = options.Area}, templatePath);
+            FileManager.CreateFileFromTemplate(controllerPath, "controller.cshtml", model, templatePath);
 
             FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
             FileManager.AddContentToProject(project.MsbuildProject, controllerpart, project.BackupId);

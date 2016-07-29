@@ -28,5 +28,10 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The route identifier of the Web API route")]
         public string Route { get; set; }
+
+        [Option('l', "template",
+            Required = false,
+            HelpText = "The directory where the cshtml templates are stored")]
+        public string Template { get; set; }
     }
 }

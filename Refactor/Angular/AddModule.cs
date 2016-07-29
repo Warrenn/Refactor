@@ -22,7 +22,8 @@ namespace Refactor.Angular
             var projectPath = Path.GetDirectoryName(project.FileName);
             var areapart = "Content\\js\\" + module;
             var modulepart = areapart + "\\" + module + ".module.js";
-
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
 
@@ -31,7 +32,7 @@ namespace Refactor.Angular
                 Directory.CreateDirectory(areaPath);
             }
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", options);
+            FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml", options,templatePath);
             FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
 
             NgManager.AddJsModuleToAppJs(projectPath, "app." + module, project.BackupId);

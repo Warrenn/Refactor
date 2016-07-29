@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.CSharp.TypeSystem;
@@ -13,6 +14,15 @@ namespace Refactor.Angular
 {
     public static class NgManager
     {
+        public static string SplitByCase(string value)
+        {
+            var r = new Regex(@"
+                        (?<=[A-Z])(?=[A-Z][a-z]) |
+                        (?<=[^A-Z])(?=[A-Z]) |
+                        (?<=[A-Za-z])(?=[^A-Za-z])",
+                RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
+            return r.Replace(value, " ");
+        }
 
         public static bool AddJsFileToNode(InvocationExpression cloneExpression, string comment, string newValue, bool firstInGroup = false)
         {
@@ -28,6 +38,7 @@ namespace Refactor.Angular
                     (string.IsNullOrEmpty(comment) || (child.ToString() == "/*" + comment + "*/")))
                 {
                     commentNode = (Comment)child;
+                    continue;
                 }
 
                 if ((child.Role == Roles.Argument) && (child.ToString() == "\"" + newValue + "\""))

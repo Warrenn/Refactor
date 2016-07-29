@@ -12,9 +12,10 @@
     //it usually includes the model values from the razor template that was used to render the page
     //it is a way for the server to communicate with javascript before rendering occurs
     function @(Model.CamelCaseName)Controller(@(Model.ServiceName), serverSideData, keyCodes) {
-        //We do this as a result of the guidance of the style guide
+        //The guidance of the style guide is to promote above the fold strategy and to set a
+        //local variable to the current controller instance
         var vm = this,
-            pageSize = 6;
+            pageSize = 4;
 
         //These are the default properties that we expose on controllers by convention
         vm.state = {
@@ -26,11 +27,7 @@
             count: 0,
             results: []
         };
-        vm.request = {
-            skip: 0,
-            take: pageSize,
-            filter: {}
-        };
+        vm.request = {};
         vm.loadData = loadData;
         vm.keypress = keypress;
 
@@ -38,15 +35,19 @@
 
         function init() {
             //If the server has provided state we can ensure that this will be used when the first call is made
-            if (serverSideData && serverSideData.filter) {
-                vm.request.filter = serverSideData.filter;
-            }
+            vm.request = (serverSideData || {}).request || {};
+
+            //Page Size is a display concern and it is scoped to a unique value for each controller which is why 
+            //it is set here and not in web.config or the app.js config
+            vm.request.take = pageSize;
+            vm.request.skip = vm.request.skip || 0;
 
             loadData(vm.request);
         }
 
         function keypress(event) {
             if (event.keyCode === keyCodes.enter) {
+                vm.request.skip = 0;
                 loadData(vm.request);
             }
         }
@@ -56,8 +57,7 @@
             if (!request) {
                 request = {
                     skip: 0,
-                    take: pageSize,
-                    filter: {}
+                    take: pageSize
                 };
             }
             vm.request = request;

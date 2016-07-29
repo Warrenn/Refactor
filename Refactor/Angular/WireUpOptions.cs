@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
+﻿using CommandLine;
 
 namespace Refactor.Angular
 {
     public class WireUpOptions
     {
         [Option('v', "service",
-            Required = false,
+            Required = true,
             HelpText = "The service interface to base the creation of objects")]
         public string Service { get; set; }
 
@@ -33,5 +28,10 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The route identifier of the Web API route")]
         public string Route { get; set; }
+
+        [Option('l', "template",
+            Required = false,
+            HelpText = "The directory where the cshtml templates are stored")]
+        public string Template { get; set; }
     }
 }

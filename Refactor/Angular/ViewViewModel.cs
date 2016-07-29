@@ -11,6 +11,7 @@ namespace Refactor.Angular
         public string CamelCaseName { get; set; }
         public string Type { get; set; }
         public IEnumerable<string> Properties { get; set; }
+        public IEnumerable<string> PropertyNames { get; set; }
         public string ControllerName { get; set; }
         public string ResultName { get; set; }
         public IEnumerable<string> Usings { get; set; }

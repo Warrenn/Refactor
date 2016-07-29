@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Build.Evaluation;
+using Mono.CSharp;
 using RazorEngine;
 using RazorEngine.Configuration;
 using RazorEngine.Templating;
@@ -86,17 +87,19 @@ namespace Refactor
             }
         }
 
-        public static void CreateFileFromTemplate(string path, string templateName, object model)
-        {
-            CreateFileFromTemplate(path, templateName, null, model);
-        }
-
-        public static void CreateFileFromTemplate(string path, string templateName, Type modelType, object model)
+        public static void CreateFileFromTemplate<T>(string path, string templateName, T model, string templatePath)
         {
             if (File.Exists(path))
             {
                 return;
             }
+
+            var modelType = typeof(T);
+            var fullTemplateName = modelType.Namespace + "." + templateName;
+            var templateFileName = Path.Combine(templatePath, templateName);
+            var moduleTemplate = (string.IsNullOrEmpty(templatePath) || !File.Exists(templateFileName))
+                ? GetTemplate(fullTemplateName)
+                : File.ReadAllText(templateFileName);         
             var config = new TemplateServiceConfiguration
             {
                 DisableTempFileLocking = true,
@@ -104,7 +107,7 @@ namespace Refactor
             };
 
             Engine.Razor = RazorEngineService.Create(config);
-            var moduleTemplate = GetTemplate(templateName);
+            
             var content = Engine.Razor.RunCompile(moduleTemplate, templateName, modelType, model);
             Trace.WriteLine(path);
             var directory = Path.GetDirectoryName(path);
@@ -117,7 +120,12 @@ namespace Refactor
 
         public static void AddContentToProject(Project project, string include, string backupId)
         {
-            var msmodule = project.GetItems("Content")
+            AddItemToProject("Content", project, include, backupId);
+        }
+
+        private static void AddItemToProject(string itemType, Project project, string include, string backupId)
+        {
+            var msmodule = project.GetItems(itemType)
                 .FirstOrDefault(i => i.UnevaluatedInclude == include);
             if (msmodule != null)
             {
@@ -125,8 +133,13 @@ namespace Refactor
             }
             var projectPath = project.FullPath;
             BackupFile(projectPath, backupId);
-            project.AddItem("Content", include);
+            project.AddItem(itemType, include);
             project.Save();
+        }
+
+        public static void AddCompileToProject(Project project, string include, string backupId)
+        {
+            AddItemToProject("Compile", project, include, backupId);
         }
     }
 }
