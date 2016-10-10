@@ -120,16 +120,16 @@ namespace Refactor.Angular
                 };
 
                 FileManager.CreateFileFromTemplate(htmlPath, "directive.html.cshtml", viewModel, templatePath);
-                FileManager.AddContentToProject(project.MsbuildProject, htmlpart, project.BackupId);
+                FileManager.AddContentToProject(project.MsbuildProject, htmlpart);
             }
 
             FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml",
                 new AddModuleOptions {Module = options.Area}, templatePath);
             FileManager.CreateFileFromTemplate(directivePath, "directive.cshtml", options, templatePath);
-            FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
-            FileManager.AddContentToProject(project.MsbuildProject, directivepart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, modulepart);
+            FileManager.AddContentToProject(project.MsbuildProject, directivepart);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area, project.BackupId);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area);
         }
     }
 }

@@ -223,13 +223,13 @@ namespace Refactor.Angular
             if (apiControllerDeclaration == null)
             {
                 FileManager.CreateFileFromTemplate(apiControllerPath, "webapi.cshtml", viewModel, templatePath);
-                FileManager.AddCompileToProject(project.MsbuildProject, apiControllerPart, project.BackupId);
+                FileManager.AddCompileToProject(project.MsbuildProject, apiControllerPart);
             }
 
             if (mvcControllerDeclaration == null)
             {
                 FileManager.CreateFileFromTemplate(mvcControllerPath, "mvccontroller.cshtml", viewModel, templatePath);
-                FileManager.AddCompileToProject(project.MsbuildProject, mvcControllerPart, project.BackupId);
+                FileManager.AddCompileToProject(project.MsbuildProject, mvcControllerPart);
             }
 
             foreach (var method in viewModel.Methods.Where(method =>
@@ -279,14 +279,14 @@ namespace Refactor.Angular
                 var cshtmlPath = Path.Combine(projectPath, cshtmlPart);
 
                 FileManager.CreateFileFromTemplate(cshtmlPath, "view.cshtml", viewViewModel, templatePath);
-                FileManager.AddContentToProject(project.MsbuildProject, cshtmlPart, project.BackupId);
+                FileManager.AddContentToProject(project.MsbuildProject, cshtmlPart);
             }
 
             NgManager.AddJsFileToNode(cloneExpression, viewModel.CamelCaseName,
                 jsRoot + "Content/js/" + viewModel.CamelCaseName + "/" + viewModel.CamelCaseName + ".module.js", true);
 
             bundleFileEntry.Script.Replace(invokeExpression, cloneExpression);
-            FileManager.CopyIfChanged(bundleFileEntry, project.BackupId);
+            FileManager.CopyIfChanged(bundleFileEntry);
         }
 
         private IEnumerable<string> GetUsings(IType type)

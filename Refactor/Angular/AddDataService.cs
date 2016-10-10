@@ -136,7 +136,7 @@ namespace Refactor.Angular
                 });
 
             FileManager.CreateFileFromTemplate(servicePath, "dataservice.cshtml", Model, templatePath);
-            FileManager.AddContentToProject(project.MsbuildProject, servicePart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, servicePart);
         }
     }
 }

@@ -51,10 +51,10 @@ namespace Refactor.Angular
                 new AddModuleOptions {Module = options.Area}, templatePath);
             FileManager.CreateFileFromTemplate(controllerPath, "controller.cshtml", model, templatePath);
 
-            FileManager.AddContentToProject(project.MsbuildProject, modulepart, project.BackupId);
-            FileManager.AddContentToProject(project.MsbuildProject, controllerpart, project.BackupId);
+            FileManager.AddContentToProject(project.MsbuildProject, modulepart);
+            FileManager.AddContentToProject(project.MsbuildProject, controllerpart);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area, project.BackupId);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Area);
         }
     }
 }

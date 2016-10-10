@@ -104,12 +104,11 @@ namespace Refactor.Angular
             var project = entry.CSharpFile.Project.MsbuildProject;
             if (!string.IsNullOrEmpty(fileName))
             {
-                FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + fileName,
-                    entry.BackupId);
+                FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + fileName);
                 changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + fileName);
             }
 
-            FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + area + ".module.js", entry.BackupId);
+            FileManager.AddContentToProject(project, "Content\\js\\" + area + "\\" + area + ".module.js");
             changed = AddJsFileToNode(cloneExpression, area, jsRoot + "Content/js/" + area + "/" + area + ".module.js", true) || changed;
             script.Replace(invokeExpression, cloneExpression);
 
@@ -160,7 +159,7 @@ namespace Refactor.Angular
             return creationNode;
         }
 
-        public static void AddJsModuleToAppJs(string projectPath, string moduleName, string backupId)
+        public static void AddJsModuleToAppJs(string projectPath, string moduleName)
         {
             var appPath = Path.Combine(projectPath, "Content\\js\\app.module.js");
             if (!File.Exists(appPath))
@@ -195,7 +194,7 @@ namespace Refactor.Angular
                 return;
             }
 
-            FileManager.BackupFile(appPath, backupId);
+            FileManager.BackupFile(appPath);
             File.WriteAllText(appPath, output);
         }
 

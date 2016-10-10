@@ -131,6 +131,11 @@
     <Compile Include="CSharpFile.cs" />
     <Compile Include="CSharpProject.cs" />
     <Compile Include="FileEntry.cs" />
+    <Compile Include="IFileEntriesEnumerator.cs" />
+    <Compile Include="IProjectsEnumerator.cs" />
+    <Compile Include="Integration\IntegrateProxy.cs" />
+    <Compile Include="Integration\IntegrationModel.cs" />
+    <Compile Include="Integration\IntegrateProxyOptions.cs" />
     <Compile Include="IRefactorFileStrategy.cs" />
     <Compile Include="Angular\AddDirectiveOptions.cs" />
     <Compile Include="Angular\AddDirective.cs" />
@@ -172,9 +177,10 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\packages\ilmerge.2.14.1208\tools\ILMerge.exe" /out:"C:\Corporate\Utilities\NugetDefinitions\Ng.Refactor\tools\$(TargetName).exe" "$(TargetDir)$(TargetName).exe" "$(TargetDir)*.dll" /target:exe /allowDup /wildcards</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)\packages\ilmerge.2.14.1208\tools\ILMerge.exe" /out:"$(SolutionDir)\$(TargetName).exe" "$(TargetDir)$(TargetName).exe" "$(TargetDir)*.dll" /target:exe /allowDup /wildcards</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

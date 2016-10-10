@@ -13,7 +13,7 @@ namespace Refactor
 {
     class Program
     {
-        public static IEnumerable<FileEntry> GetFileEntries(CSharpProject project, string backupId)
+        public static IEnumerable<FileEntry> GetFileEntries(CSharpProject project)
         {
             var editorOptions = new TextEditorOptions();
             var formattingOptions = FormattingOptionsFactory.CreateAllman();
@@ -26,9 +26,15 @@ namespace Refactor
                 {
                     CSharpFile = file,
                     Document = document,
-                    Script = script,
-                    BackupId = backupId
+                    Script = script
                 };
+        }
+
+        public static IEnumerable<CSharpProject> GetProjects(Solution solution)
+        {
+            return solution.Projects.Where(p =>
+                string.IsNullOrEmpty(Options.CurrentOptions.Project) ||
+                string.Equals(Options.CurrentOptions.Project, p.Title, StringComparison.OrdinalIgnoreCase));
         }
 
         static void Main(string[] args)
@@ -40,6 +46,8 @@ namespace Refactor
             {
                 Environment.Exit(1);
             }
+
+            Options.CurrentOptions = options;
 
             if (!File.Exists(options.Solution))
             {
@@ -85,24 +93,30 @@ namespace Refactor
             try
             {
                 var solution = new Solution(options.Solution);
-                var projects = solution.Projects;
+                var projectsEnumerator = strategy as IProjectsEnumerator;
 
-                foreach (var project in projects.Where(p =>
-                    string.IsNullOrEmpty(options.Project) ||
-                    string.Equals(options.Project, p.Title, StringComparison.OrdinalIgnoreCase)))
+                var projects = projectsEnumerator != null
+                    ? projectsEnumerator.GetCSharpProjects(solution)
+                    : GetProjects(solution);
+
+                foreach (var project in projects)
                 {
-                    project.BackupId = options.BackupId;
                     if (fileStrategy == null)
                     {
                         projectStrategy.RefactorProject(project);
                         continue;
                     }
 
-                    foreach (var fileEntry in GetFileEntries(project, options.BackupId))
+                    var fileEnumerator = strategy as IFileEntriesEnumerator;
+                    var fileEntries = fileEnumerator != null
+                        ? fileEnumerator.GetFileEntries(project)
+                        : GetFileEntries(project);
+
+                    foreach (var fileEntry in fileEntries)
                     {
                         fileEntry.CSharpFile.SyntaxTree.Freeze();
                         fileStrategy.RefactorFile(fileEntry);
-                        FileManager.CopyIfChanged(fileEntry, options.BackupId);
+                        FileManager.CopyIfChanged(fileEntry);
                     }
 
                     if (projectStrategy == null)

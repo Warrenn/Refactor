@@ -13,7 +13,7 @@ namespace Refactor
 {
     public static class FileManager
     {
-        public static void CopyIfChanged(FileEntry fileEntry, string backupId)
+        public static void CopyIfChanged(FileEntry fileEntry)
         {
             if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
             {
@@ -22,7 +22,7 @@ namespace Refactor
 
             try
             {
-                BackupFile(fileEntry.CSharpFile.FileName, backupId);
+                BackupFile(fileEntry.CSharpFile.FileName);
                 File.WriteAllText(fileEntry.CSharpFile.FileName, fileEntry.Document.Text);
             }
             catch (Exception ex)
@@ -31,12 +31,12 @@ namespace Refactor
             }
         }
 
-        public static void BackupFile(string fileName, string backupId)
+        public static void BackupFile(string fileName)
         {
             var extension = Path.GetExtension(fileName);
-            var newExtension = string.IsNullOrEmpty(backupId)
+            var newExtension = string.IsNullOrEmpty(Options.CurrentOptions.BackupId)
                 ? extension + ".backup"
-                : extension + "." + backupId + ".backup";
+                : extension + "." + Options.CurrentOptions.BackupId + ".backup";
             var backupName = Path.ChangeExtension(fileName, newExtension);
 
             DisableReadOnly(fileName);
@@ -118,12 +118,12 @@ namespace Refactor
             File.WriteAllText(path, content);
         }
 
-        public static void AddContentToProject(Project project, string include, string backupId)
+        public static void AddContentToProject(Project project, string include)
         {
-            AddItemToProject("Content", project, include, backupId);
+            AddItemToProject("Content", project, include);
         }
 
-        private static void AddItemToProject(string itemType, Project project, string include, string backupId)
+        private static void AddItemToProject(string itemType, Project project, string include)
         {
             var msmodule = project.GetItems(itemType)
                 .FirstOrDefault(i => i.UnevaluatedInclude == include);
@@ -132,14 +132,14 @@ namespace Refactor
                 return;
             }
             var projectPath = project.FullPath;
-            BackupFile(projectPath, backupId);
+            BackupFile(projectPath);
             project.AddItem(itemType, include);
             project.Save();
         }
 
-        public static void AddCompileToProject(Project project, string include, string backupId)
+        public static void AddCompileToProject(Project project, string include)
         {
-            AddItemToProject("Compile", project, include, backupId);
+            AddItemToProject("Compile", project, include);
         }
     }
 }

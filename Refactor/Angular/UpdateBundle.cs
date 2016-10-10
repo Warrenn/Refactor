@@ -39,7 +39,7 @@ namespace Refactor.Angular
                 .Select(Path.GetFileName)
                 .Where(filename => filename != "app.module.js"))
             {
-                FileManager.AddContentToProject(project, "Content\\js\\" + fileName, entry.BackupId);
+                FileManager.AddContentToProject(project, "Content\\js\\" + fileName);
                 if (Path.GetExtension(fileName) != ".js")
                 {
                     continue;
@@ -49,7 +49,7 @@ namespace Refactor.Angular
 
             FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions(), templatePath);
             NgManager.AddJsFileToNode(cloneExpression, "app", "app.module.js", true);
-            FileManager.AddContentToProject(project, "Content\\js\\app.module.js", entry.BackupId);
+            FileManager.AddContentToProject(project, "Content\\js\\app.module.js");
 
             foreach (var directory in Directory.GetDirectories(jsPath))
             {
@@ -59,7 +59,7 @@ namespace Refactor.Angular
                     .Select(Path.GetFileName)
                     .Where(filename => filename != folderName + ".module.js"))
                 {
-                    FileManager.AddContentToProject(project, "Content\\js\\" + folderName + "\\" + fileName, entry.BackupId);
+                    FileManager.AddContentToProject(project, "Content\\js\\" + folderName + "\\" + fileName);
                     if (Path.GetExtension(fileName) != ".js")
                     {
                         continue;
