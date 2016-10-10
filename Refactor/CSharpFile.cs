@@ -26,6 +26,8 @@ namespace Refactor
     public class CSharpFile
     {
         public string FileName { get; private set; }
+        public string Folder { get; private set; }
+        public string RelativePath { get; private set; }
         public string OriginalText { get; private set; }
         public SyntaxTree SyntaxTree { get; private set; }
         public CSharpParser Parser { get; private set; }
@@ -37,6 +39,8 @@ namespace Refactor
             Project = project;
             FileName = fileName;
 
+            RelativePath = fileName.Substring(project.Folder.Length);
+            Folder = Path.GetDirectoryName(FileName);
             Parser = new CSharpParser(project.CompilerSettings);
             OriginalText = File.ReadAllText(fileName);
             SyntaxTree = Parser.Parse(OriginalText, fileName);

@@ -15,6 +15,6 @@ namespace Refactor.Integration
 
         public string Name { get; set; }
 
-        public string WsdlPath { get; set; }
+        public string ServiceReferencePath { get; set; }
     }
 }

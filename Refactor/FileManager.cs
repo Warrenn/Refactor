@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -34,36 +35,22 @@ namespace Refactor
         public static void BackupFile(string fileName)
         {
             var extension = Path.GetExtension(fileName);
-            var newExtension = string.IsNullOrEmpty(Options.CurrentOptions.BackupId)
-                ? extension + ".backup"
-                : extension + "." + Options.CurrentOptions.BackupId + ".backup";
+            var backupId = string.IsNullOrEmpty(Options.CurrentOptions.BackupId)
+                ? DateTime.Now.ToString("yyyyMMddhhmm")
+                : Options.CurrentOptions.BackupId;
+
+            var newExtension = extension + "." + backupId + ".backup";
             var backupName = Path.ChangeExtension(fileName, newExtension);
 
             DisableReadOnly(fileName);
-            BackupTheBackup(backupName);
 
             var contents = File.ReadAllText(fileName);
             Trace.WriteLine(fileName);
+            if (File.Exists(backupName))
+            {
+                DisableReadOnly(backupName);
+            }
             File.WriteAllText(backupName, contents);
-        }
-
-        private static void BackupTheBackup(string backupFileName)
-        {
-            if (!File.Exists(backupFileName))
-            {
-                return;
-            }
-
-            var original = backupFileName;
-            DisableReadOnly(original);
-
-            for (var i = 1; File.Exists(backupFileName); i++)
-            {
-                backupFileName = Path.ChangeExtension(original, "." + i + ".backup");
-            }
-
-            var contents = File.ReadAllText(original);
-            File.WriteAllText(backupFileName, contents);
         }
 
         private static void DisableReadOnly(string fileName)
@@ -99,7 +86,7 @@ namespace Refactor
             var templateFileName = Path.Combine(templatePath, templateName);
             var moduleTemplate = (string.IsNullOrEmpty(templatePath) || !File.Exists(templateFileName))
                 ? GetTemplate(fullTemplateName)
-                : File.ReadAllText(templateFileName);         
+                : File.ReadAllText(templateFileName);
             var config = new TemplateServiceConfiguration
             {
                 DisableTempFileLocking = true,
@@ -107,7 +94,7 @@ namespace Refactor
             };
 
             Engine.Razor = RazorEngineService.Create(config);
-            
+
             var content = Engine.Razor.RunCompile(moduleTemplate, templateName, modelType, model);
             Trace.WriteLine(path);
             var directory = Path.GetDirectoryName(path);
@@ -123,7 +110,8 @@ namespace Refactor
             AddItemToProject("Content", project, include);
         }
 
-        private static void AddItemToProject(string itemType, Project project, string include)
+        private static void AddItemToProject(string itemType, Project project, string include,
+            IEnumerable<KeyValuePair<string, string>> metaData = null)
         {
             var msmodule = project.GetItems(itemType)
                 .FirstOrDefault(i => i.UnevaluatedInclude == include);
@@ -133,13 +121,81 @@ namespace Refactor
             }
             var projectPath = project.FullPath;
             BackupFile(projectPath);
-            project.AddItem(itemType, include);
+            if (metaData == null)
+            {
+                project.AddItem(itemType, include);
+            }
+            else
+            {
+                project.AddItem(itemType, include, metaData);
+            }
             project.Save();
         }
 
         public static void AddCompileToProject(Project project, string include)
         {
             AddItemToProject("Compile", project, include);
+        }
+
+        public static void AddWcfReferenceToProject(Project project, string wcfPath)
+        {
+            var projectDirectory = Path.GetDirectoryName(project.FullPath);
+
+            AddItemToProject("WCFMetadataStorage", project, wcfPath);
+
+            var pathParts = wcfPath.Split(new[] {Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar},
+                StringSplitOptions.RemoveEmptyEntries);
+            AddItemToProject("WCFMetadata", project, pathParts[0] + Path.PathSeparator);
+
+
+            foreach (var filename in Directory.GetFiles(Path.Combine(projectDirectory, wcfPath)))
+            {
+                var fileNameOnly = Path.GetFileName(filename);
+
+                if (string.Equals(fileNameOnly, "Reference.cs",
+                    StringComparison.InvariantCultureIgnoreCase))
+                {
+                    AddItemToProject("Compile", project, Path.Combine(wcfPath, "Reference.cs"),
+                        new Dictionary<string, string>
+                        {
+                            {"AutoGen", "True"},
+                            {"DesignTime", "True"},
+                            {"DependentUpon", "Reference.svcmap"}
+                        });
+                    continue;
+                }
+
+                if (string.Equals(fileNameOnly, "Reference.svcmap",
+                    StringComparison.InvariantCultureIgnoreCase))
+                {
+                    AddItemToProject("None", project, Path.Combine(wcfPath, "Reference.svcmap"),
+                        new Dictionary<string, string>
+                        {
+                            {"Generator", "WCF Proxy Generator"},
+                            {"LastGenOutput", "Reference.cs"}
+                        });
+                    continue;
+                }
+
+                var fileType = Path.GetExtension(filename);
+
+                if (fileType == ".datasource")
+                {
+                    AddItemToProject("None", project, Path.Combine(wcfPath, fileNameOnly),
+                        new Dictionary<string, string>
+                        {
+                            {"DependentUpon", "Reference.svcmap"}
+                        });
+                    continue;
+                }
+
+                if ((new[] { ".svcinfo", ".wsdl" }).Contains(fileType))
+                {
+                    AddItemToProject("None", project, Path.Combine(wcfPath, fileNameOnly));
+                }
+            }
+
+            project.Save();
         }
     }
 }
