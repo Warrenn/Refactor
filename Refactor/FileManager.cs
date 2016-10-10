@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -28,6 +29,7 @@ namespace Refactor
             }
 
             var contents = File.ReadAllText(fileName);
+            Trace.WriteLine(fileName);
             File.WriteAllText(backupName, contents);
         }
 
@@ -61,7 +63,8 @@ namespace Refactor
 
             Engine.Razor = RazorEngineService.Create(config);
             var moduleTemplate = GetTemplate(templateName);
-            var content = Engine.Razor.RunCompile(moduleTemplate, templateName, null, model);
+            var content = Engine.Razor.RunCompile(moduleTemplate, templateName, modelType, model);
+            Trace.WriteLine(path);
             File.WriteAllText(path, content);
         }
 

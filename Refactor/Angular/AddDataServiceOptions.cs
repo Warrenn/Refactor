@@ -13,5 +13,10 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The Project name containing all the files that will be examined.")]
         public string Project { get; set; }
+
+        [Option('r', "routename",
+            Required = false,
+            HelpText = "The name of the route in MVC.")]
+        public string RouteName { get; set; }
     }
 }

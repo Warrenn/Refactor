@@ -12,7 +12,7 @@ namespace Refactor.Angular
 {
     public static class NgManager
     {
-        public static bool AddJsFileToBundle(FileEntry entry, string project, string area, string fileName)
+        public static bool AddJsFileToBundle(FileEntry entry, string relativeRoot, string jsIdentifier, string area, string fileName)
         {
             var file = entry.CSharpFile;
             var method = (
@@ -44,7 +44,7 @@ namespace Refactor.Angular
                 from node in file.SyntaxTree.Descendants.OfType<ObjectCreateExpression>()
                 from argument in node.Arguments
                 where
-                    argument.ToString() == "\"~/" + project + "/js\""
+                    argument.ToString() == jsIdentifier
                 select node).FirstOrDefault();
 
             if (creationNode == null)
@@ -62,10 +62,10 @@ namespace Refactor.Angular
 
             if (!string.IsNullOrEmpty(fileName))
             {
-                jsFileName ="~/Areas/" + project + "/Content/js/" + area + "/" + fileName + ".js";
+                jsFileName = relativeRoot + "/Content/js/" + area + "/" + fileName + ".js";
             }
 
-            var moduleFileName = "~/Areas/" + project + "/Content/js/" + area + "/" + area + ".module.js";
+            var moduleFileName = relativeRoot + "/Content/js/" + area + "/" + area + ".module.js";
 
             foreach (var child in cloneExpression.Children)
             {
@@ -106,7 +106,7 @@ namespace Refactor.Angular
             return true;
         }
 
-        public static void AddJsModuleToAppJs(string projectPath,string moduleName)
+        public static void AddJsModuleToAppJs(string projectPath, string moduleName)
         {
             var appPath = Path.Combine(projectPath, "Content\\js\\app.module.js");
             if (!File.Exists(appPath))
@@ -200,7 +200,7 @@ namespace Refactor.Angular
                         m.IsPublic &&
                         !m.IsStatic &&
                         m.Attributes.All(
-                            a => ((CSharpAttribute) a).AttributeType.ToString() != "Ignore[Attribute]"),
+                            a => ((CSharpAttribute)a).AttributeType.ToString() != "Ignore[Attribute]"),
                         GetMemberOptions.IgnoreInheritedMembers)
                     .Select(m => new DataServiceViewModel.MethodCall
                     {

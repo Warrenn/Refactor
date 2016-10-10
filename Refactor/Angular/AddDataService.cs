@@ -8,7 +8,7 @@ using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Refactor.Angular
 {
-    public class AddDataService : ArgsRefactorFileStrategy<AddDataServiceOptions>,IRefactorProjectStrategy
+    public class AddDataService : ArgsRefactorFileStrategy<AddDataServiceOptions>, IRefactorProjectStrategy
     {
         private DataServiceViewModel model;
         private string routeDeclaration;
@@ -71,7 +71,7 @@ namespace Refactor.Angular
                 });
 
             FileManager.CreateFileFromTemplate(servicePath, "Refactor.Angular.dataservice.cshtml",
-                typeof (DataServiceViewModel), model);
+                typeof(DataServiceViewModel), model);
             FileManager.AddContentToProject(project.MsbuildProject, servicePart);
         }
     }

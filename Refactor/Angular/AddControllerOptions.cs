@@ -23,5 +23,10 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The service method call made by the angular controller")]
         public string Service { get; set; }
+
+        [Option('j', "jsid",
+            Required = false,
+            HelpText = "The identifier of the javascript bundles collection")]
+        public string JsIdentifier { get; set; }
     }
 }

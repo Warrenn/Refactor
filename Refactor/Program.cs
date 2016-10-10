@@ -97,7 +97,6 @@ namespace Refactor
                     {
                         fileEntry.CSharpFile.SyntaxTree.Freeze();
                         var fileName = fileEntry.CSharpFile.FileName;
-                        Trace.WriteLine(fileName);
                         fileStrategy.RefactorFile(fileEntry);
                         if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
                         {
@@ -106,6 +105,7 @@ namespace Refactor
                         try
                         {
                             FileManager.BackupFile(fileName);
+                            Trace.WriteLine(fileName);
                             File.WriteAllText(fileName, fileEntry.Document.Text);
                         }
                         catch (Exception ex)
