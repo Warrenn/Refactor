@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 
 namespace Refactor.Angular
 {
@@ -13,20 +14,21 @@ namespace Refactor.Angular
 
         public override void RefactorFile(FileEntry entry)
         {
-            NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, options.Area, options.Controller);
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, options.Area, options.Controller + ".js");
         }
 
         public void RefactorProject(CSharpProject project)
         {
             var projectPath = Path.GetDirectoryName(project.FileName);
             var areapart = "Content\\js\\" + options.Area;
-            var modulepart = areapart + "\\" + options.Area + ".module.js";
+            var modulepart = areapart + "\\" + NgManager.CamelCase(options.Area) + ".module.js";
             var controllerpart = areapart + "\\" + NgManager.CamelCase(options.Controller) + ".js";
             var serviceParts = options.Service.Split('.');
-
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
             var controllerPath = Path.Combine(projectPath, controllerpart);
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
 
             if (!Directory.Exists(areaPath))
             {
@@ -35,6 +37,7 @@ namespace Refactor.Angular
 
             if (serviceParts.Length != 2)
             {
+                Trace.TraceError("Service was not in the correct format needs to be servicename.methodname format.");
                 return;
             }
 

@@ -1,24 +1,84 @@
-﻿@model dynamic
-(function () {
+﻿@model Refactor.Angular.AddDirectiveOptions
+(function() {
     'use strict';
 
     angular
         .module('app.@Model.Area')
         .directive('@Model.Directive', @Model.Directive);
 
-    @(Model.Directive).$inject = ['config'];
+    @(Model.Directive).$inject = ['config','@(Model.ServiceName)','common'];
 
-    function @(Model.Directive)(config) {
+    function @(Model.Directive)(config, @(Model.ServiceName), common) {
         var directive = {
+            restrict: 'E',
             scope: {
+                onClose: '&'
             },
-            link: link,
-            templateUrl: config.baseFolder + '/@(Model.Area)/@(Model.Directive).html'
+            templateUrl: config.baseFolder + '/@(Model.Area)/@(Model.Directive).html',
+            link: link
         }
 
         return directive;
 
-        function link(scope) {
+        function link(scope, element) {
+            var onClose = scope.onClose;
+            scope.state = {
+                dialogOpen: false,
+                loading: false,
+                error: false,
+                errorData: ''
+            };
+            scope.closeClicked = closeClicked;
+            scope.updateClicked = updateClicked;
+            scope.model = {};
+            scope.context = {};
+            scope.response = {};
+
+            init();
+
+            function init() {
+                scope.$on('@(Model.Directive).open', @(Model.Directive)Open);
+            }
+
+            function @(Model.Directive)Open(event, eventData) {
+                eventData = eventData || {};
+                scope.context = eventData.context || {};
+                scope.model = eventData.model || {};
+                scope.state.dialogOpen = true;
+            }
+
+            function closeDialog() {
+                scope.state.dialogOpen = false;
+                var eventData = {
+                    model: scope.model,
+                    context: scope.context
+                };
+                onClose({ $event: eventData });
+            }
+
+            function updateClicked() {
+                scope.state.error = false;
+                scope.state.loading = true;
+                scope.state.errorData = '';
+
+                @(Model.ServiceName).@(Model.ServiceMethod)(scope.model)
+                .then(
+                    //If the call was successfull we get in here
+                    function(response) {
+                        scope.response = response.data;
+                        scope.state.loading = false;
+                    },
+                    //If the call failed we get in here
+                    function(reason) {
+                        scope.state.loading = false;
+                        scope.state.error = true;
+                        scope.state.errorData = reason;
+                    });
+            }
+
+            function closeClicked() {
+                closeDialog();
+            }
         }
     }
 })();

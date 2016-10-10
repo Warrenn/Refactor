@@ -2,12 +2,12 @@
 
 namespace Refactor.Angular
 {
-    public class AddModuleOptions
+    public class WireUpOptions
     {
-        [Option('m', "module",
+        [Option('v', "service",
             Required = true,
-            HelpText = "The module area that will added")]
-        public string Module { get; set; }
+            HelpText = "The service interface to base the creation of objects")]
+        public string Service { get; set; }
 
         [Option('b', "bundleid",
             Required = false,
@@ -18,6 +18,16 @@ namespace Refactor.Angular
             Required = false,
             HelpText = "The root path of the javascript files to add")]
         public string JsRoot { get; set; }
+
+        [Option('p', "project",
+            Required = false,
+            HelpText = "The Project name containing all the files that will be examined.")]
+        public string Project { get; set; }
+
+        [Option('t', "route",
+            Required = false,
+            HelpText = "The route identifier of the Web API route")]
+        public string Route { get; set; }
 
         [Option('l', "template",
             Required = false,

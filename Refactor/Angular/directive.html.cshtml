@@ -1,1 +1,28 @@
-﻿@model dynamic
+﻿@model Refactor.Angular.AddDirectiveViewModel
+@{
+    var properties = Model.Properties.ToArray();
+    var labels = Model.PropertyLabels.ToArray();
+}
+<overlay full-screen="true" class="modal large" ng-hide="!state.dialogOpen">
+    <h2>@(Model.Heading)</h2>
+    <a class="dialog-box-close" ng-click="closeClicked()"></a>
+    <form name="form">
+        <table>
+            @for (var i = 0; i < properties.Length; i++)
+            {
+            <tr>
+                <td>
+                    <label for="@((string)properties[i])">@((string)labels[i])</label>
+                </td>
+                <td>
+                    <input id="@((string)properties[i])" type="text" data-ng-model="model.@((string)properties[i])" @((i==0)?"autofocus":"")/>
+                </td>
+            </tr>                
+            }
+        </table>
+        <span class="error-border" data-ng-if="state.error && !state.loading && state.errorData">{{state.errorData}}</span>
+        <div class="textRight ">
+            <a class="btn primary" data-ng-disabled="state.loading || !form.$valid" data-ng-class="{'disabled_link':state.loading || !form.$valid}" data-ng-click="updateClicked()">{{state.loading?'Loading':'Update'}}</a>
+        </div>
+    </form>
+</overlay>

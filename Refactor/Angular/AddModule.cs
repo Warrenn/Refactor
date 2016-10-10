@@ -2,24 +2,28 @@
 
 namespace Refactor.Angular
 {
-    public class AddModule : ArgsRefactorFileStrategy<AddModuleOptions>,IRefactorProjectStrategy
+    public class AddModule : ArgsRefactorFileStrategy<AddModuleOptions>, IRefactorProjectStrategy
     {
+        private readonly string module;
+
         public AddModule(AddModuleOptions options)
             : base(options)
         {
+            module = NgManager.CamelCase(options.Module);
         }
 
         public override void RefactorFile(FileEntry entry)
         {
-            NgManager.AddJsFileToBundle(entry, entry.CSharpFile.Project.Title, options.Module, string.Empty);
+            NgManager.AddJsFileToBundle(entry, options.BundleId, options.JsRoot, module, string.Empty);
         }
 
         public void RefactorProject(CSharpProject project)
         {
             var projectPath = Path.GetDirectoryName(project.FileName);
-            var areapart = "Content\\js\\" + options.Module;
-            var modulepart = areapart + "\\" + options.Module + ".module.js";
-
+            var areapart = "Content\\js\\" + module;
+            var modulepart = areapart + "\\" + module + ".module.js";
+            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
+            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
 
@@ -28,10 +32,10 @@ namespace Refactor.Angular
                 Directory.CreateDirectory(areaPath);
             }
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml", options);
+            FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml", options,templatePath);
             FileManager.AddContentToProject(project.MsbuildProject, modulepart);
 
-            NgManager.AddJsModuleToAppJs(projectPath, "app." + options.Module);
+            NgManager.AddJsModuleToAppJs(projectPath, "app." + module);
         }
     }
 }

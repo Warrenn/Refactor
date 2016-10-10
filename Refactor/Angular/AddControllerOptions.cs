@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using CommandLine;
+﻿using CommandLine;
 
 namespace Refactor.Angular
 {
@@ -19,14 +14,24 @@ namespace Refactor.Angular
             HelpText = "The angular controller name")]
         public string Controller { get; set; }
 
-        [Option('s', "service",
+        [Option('v', "service",
             Required = false,
             HelpText = "The service method call made by the angular controller")]
         public string Service { get; set; }
 
-        [Option('j', "jsid",
+        [Option('b', "bundleid",
             Required = false,
-            HelpText = "The identifier of the javascript bundles collection")]
-        public string JsIdentifier { get; set; }
+            HelpText = "The bundle identifier to add the javascript file references to")]
+        public string BundleId { get; set; }
+
+        [Option('j', "jsroot",
+            Required = false,
+            HelpText = "The root path of the javascript files to add")]
+        public string JsRoot { get; set; }
+
+        [Option('l', "template",
+            Required = false,
+            HelpText = "The directory where the cshtml templates are stored")]
+        public string Template { get; set; }
     }
 }

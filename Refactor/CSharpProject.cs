@@ -15,6 +15,7 @@ namespace Refactor
         public string Title { get; private set; }
         public string AssemblyName { get; private set; }
         public string FileName { get; private set; }
+        public string Folder { get; private set; }
         public CompilerSettings CompilerSettings { get; private set; }
         public IProjectContent ProjectContent { get; private set; }
         public IEnumerable<CSharpFile> Files { get; private set; }
@@ -28,6 +29,7 @@ namespace Refactor
             FileName = Path.GetFullPath(fileName);
             Solution = solution;
             Title = title;
+            Folder = Path.GetDirectoryName(fileName);
 
             // Use MSBuild to open the .csproj
             MsbuildProject = new Project(fileName);

@@ -18,5 +18,12 @@ namespace Refactor
             Required = true,
             HelpText = "Strategy to use in refactoring the files in the solution.")]
         public string Refactory { get; set; }
+
+        [Option('k', "backupid",
+            Required = false,
+            HelpText = "Backup id is used to prevent overriding of previous backups and to keep the backup of changes in sync.")]
+        public string BackupId { get; set; }
+
+        public static Options CurrentOptions { get; set; }
     }
 }

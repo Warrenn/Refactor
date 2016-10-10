@@ -29,13 +29,13 @@
 @:          var options = {
     if (method.IsPost)
     {
-@:              url: '/@(method.Path)',
+@:              url: '/@Raw(method.Path)',
 @:              method: 'POST',
 @:              data: request
     }
     else
     {
-@:              url: '/@(method.Path)?' + createParams(request),
+@:              url: '/@Raw(method.Path)?' + createParams(request),
 @:              method: 'GET'
     }
 @:          };

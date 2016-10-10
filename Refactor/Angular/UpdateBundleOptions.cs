@@ -1,14 +1,14 @@
-﻿using CommandLine;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using CommandLine;
 
 namespace Refactor.Angular
 {
-    public class AddModuleOptions
+    public class UpdateBundleOptions
     {
-        [Option('m', "module",
-            Required = true,
-            HelpText = "The module area that will added")]
-        public string Module { get; set; }
-
         [Option('b', "bundleid",
             Required = false,
             HelpText = "The bundle identifier to add the javascript file references to")]

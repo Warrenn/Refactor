@@ -13,6 +13,30 @@ namespace Refactor
 {
     class Program
     {
+        public static IEnumerable<FileEntry> GetFileEntries(CSharpProject project)
+        {
+            var editorOptions = new TextEditorOptions();
+            var formattingOptions = FormattingOptionsFactory.CreateAllman();
+
+            return
+                from file in project.Files
+                let document = new StringBuilderDocument(file.OriginalText)
+                let script = new DocumentScript(document, formattingOptions, editorOptions)
+                select new FileEntry
+                {
+                    CSharpFile = file,
+                    Document = document,
+                    Script = script
+                };
+        }
+
+        public static IEnumerable<CSharpProject> GetProjects(Solution solution)
+        {
+            return solution.Projects.Where(p =>
+                string.IsNullOrEmpty(Options.CurrentOptions.Project) ||
+                string.Equals(Options.CurrentOptions.Project, p.Title, StringComparison.OrdinalIgnoreCase));
+        }
+
         static void Main(string[] args)
         {
             AppDomain.CurrentDomain.UnhandledException += UnhandledException;
@@ -22,6 +46,8 @@ namespace Refactor
             {
                 Environment.Exit(1);
             }
+
+            Options.CurrentOptions = options;
 
             if (!File.Exists(options.Solution))
             {
@@ -67,14 +93,13 @@ namespace Refactor
             try
             {
                 var solution = new Solution(options.Solution);
-                var projects = solution.Projects;
+                var projectsEnumerator = strategy as IProjectsEnumerator;
 
-                var editorOptions = new TextEditorOptions();
-                var formattingOptions = FormattingOptionsFactory.CreateAllman();
+                var projects = projectsEnumerator != null
+                    ? projectsEnumerator.GetCSharpProjects(solution)
+                    : GetProjects(solution);
 
-                foreach (var project in projects.Where(p =>
-                    string.IsNullOrEmpty(options.Project) ||
-                    options.Project == p.Title))
+                foreach (var project in projects)
                 {
                     if (fileStrategy == null)
                     {
@@ -82,36 +107,16 @@ namespace Refactor
                         continue;
                     }
 
-                    var fileEntries =
-                        from file in project.Files
-                        let document = new StringBuilderDocument(file.OriginalText)
-                        let script = new DocumentScript(document, formattingOptions, editorOptions)
-                        select new FileEntry
-                        {
-                            CSharpFile = file,
-                            Document = document,
-                            Script = script
-                        };
+                    var fileEnumerator = strategy as IFileEntriesEnumerator;
+                    var fileEntries = fileEnumerator != null
+                        ? fileEnumerator.GetFileEntries(project)
+                        : GetFileEntries(project);
 
                     foreach (var fileEntry in fileEntries)
                     {
                         fileEntry.CSharpFile.SyntaxTree.Freeze();
-                        var fileName = fileEntry.CSharpFile.FileName;
                         fileStrategy.RefactorFile(fileEntry);
-                        if (fileEntry.Document.Text == fileEntry.CSharpFile.OriginalText)
-                        {
-                            continue;
-                        }
-                        try
-                        {
-                            FileManager.BackupFile(fileName);
-                            Trace.WriteLine(fileName);
-                            File.WriteAllText(fileName, fileEntry.Document.Text);
-                        }
-                        catch (Exception ex)
-                        {
-                            Trace.TraceError(ex.ToString());
-                        }
+                        FileManager.CopyIfChanged(fileEntry);
                     }
 
                     if (projectStrategy == null)
