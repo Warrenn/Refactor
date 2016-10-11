@@ -18,15 +18,21 @@ namespace Refactor.Integration
 
         public IntegrateProxy(IntegrateProxyOptions options) : base(options)
         {
-             
+
             model = new IntegrationModel();
         }
 
         public override void RefactorFile(FileEntry entry)
         {
-            if (IsServiceReferenceFile(entry))
+            if (FileIsServiceReference(entry))
             {
                 model.ServiceReferencePath = Path.GetDirectoryName(entry.CSharpFile.RelativePath);
+                return;
+            }
+
+            if (FileIsManager(entry))
+            {
+                return;
             }
             //find the contract(s)
             //find the manager
@@ -34,7 +40,19 @@ namespace Refactor.Integration
             //entry.CSharpFile.Project.MsbuildProject.AddItem(Microsoft.Build.Evaluation.ProjectM)
         }
 
-        private static bool IsServiceReferenceFile(FileEntry entry)
+        static bool FileIsManager(FileEntry entry)
+        {
+            var types = entry
+                .CSharpFile
+                .SyntaxTree
+                .Descendants
+                .OfType<TypeDeclaration>()
+                .ToArray();
+
+            return false;
+        }
+
+        static bool FileIsServiceReference(FileEntry entry)
         {
             var types = entry
                 .CSharpFile
