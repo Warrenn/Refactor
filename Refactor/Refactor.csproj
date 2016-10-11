@@ -180,7 +180,7 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>"$(SolutionDir)\packages\ilmerge.2.14.1208\tools\ILMerge.exe" /out:"$(SolutionDir)\$(TargetName).exe" "$(TargetDir)$(TargetName).exe" "$(TargetDir)*.dll" /target:exe /allowDup /wildcards</PostBuildEvent>
+    <PostBuildEvent>"$(SolutionDir)\packages\ilmerge.2.14.1208\tools\ILMerge.exe" /out:"$(TargetDir)$(TargetName)_all.exe" "$(TargetDir)$(TargetName).exe" "$(TargetDir)*.dll" /target:exe /allowDup /wildcards</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
