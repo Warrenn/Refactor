@@ -38,18 +38,18 @@ namespace Refactor
             var backupId = string.IsNullOrEmpty(Options.CurrentOptions.BackupId)
                 ? DateTime.Now.ToString("yyyyMMddhhmm")
                 : Options.CurrentOptions.BackupId;
-
             var newExtension = extension + "." + backupId + ".backup";
             var backupName = Path.ChangeExtension(fileName, newExtension);
+
+            if (File.Exists(backupName))
+            {
+                return;
+            }
 
             DisableReadOnly(fileName);
 
             var contents = File.ReadAllText(fileName);
             Trace.WriteLine(fileName);
-            if (File.Exists(backupName))
-            {
-                DisableReadOnly(backupName);
-            }
             File.WriteAllText(backupName, contents);
         }
 

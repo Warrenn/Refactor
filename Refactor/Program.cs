@@ -30,12 +30,9 @@ namespace Refactor
                 };
         }
 
-        public static IEnumerable<CSharpProject> GetProjects(Solution solution)
-        {
-            return solution.Projects.Where(p =>
-                string.IsNullOrEmpty(Options.CurrentOptions.Project) ||
-                string.Equals(Options.CurrentOptions.Project, p.Title, StringComparison.OrdinalIgnoreCase));
-        }
+        public static IEnumerable<CSharpProject> GetProjects(Solution solution) => solution.Projects.Where(p =>
+            string.IsNullOrEmpty(Options.CurrentOptions.Project) ||
+            string.Equals(Options.CurrentOptions.Project, p.Title, StringComparison.OrdinalIgnoreCase));
 
         static void Main(string[] args)
         {
@@ -119,12 +116,7 @@ namespace Refactor
                         FileManager.CopyIfChanged(fileEntry);
                     }
 
-                    if (projectStrategy == null)
-                    {
-                        continue;
-                    }
-
-                    projectStrategy.RefactorProject(project);
+                    projectStrategy?.RefactorProject(project);
                 }
             }
             catch (Exception ex)
@@ -134,7 +126,7 @@ namespace Refactor
             }
         }
 
-        private static Type StrategyType(string optionsRefactory)
+        static Type StrategyType(string optionsRefactory)
         {
             var domainAssemblies = AppDomain.CurrentDomain.GetAssemblies();
 
@@ -168,7 +160,7 @@ namespace Refactor
             return strategyType;
         }
 
-        private static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        static void UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
             Trace.TraceError(e.ExceptionObject.ToString());
             Environment.Exit(1);
