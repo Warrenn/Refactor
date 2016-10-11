@@ -121,8 +121,6 @@ namespace Refactor.Angular
                 Trace.TraceError("The model or route could not be found");
                 return;
             }
-            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
-            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
             var projectPath = Path.GetDirectoryName(project.FileName);
             var servicePart = "Content\\js\\data\\" + fileName;
             var servicePath = Path.Combine(projectPath, servicePart);
@@ -135,7 +133,7 @@ namespace Refactor.Angular
                     return m;
                 });
 
-            FileManager.CreateFileFromTemplate(servicePath, "dataservice.cshtml", Model, templatePath);
+            FileManager.CreateFileFromTemplate(servicePath, "dataservice.cshtml", Model);
             FileManager.AddContentToProject(project.MsbuildProject, servicePart);
         }
     }

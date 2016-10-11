@@ -179,15 +179,13 @@ namespace Refactor.Angular
             var jsRoot = options.JsRoot;
             var invokeExpression = (InvocationExpression)bundleNode.Parent.Parent;
             var cloneExpression = (InvocationExpression)invokeExpression.Clone();
-            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
-            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
 
             if (string.IsNullOrEmpty(jsRoot))
             {
                 jsRoot = "~/Areas/" + project.Title + "/";
             }
 
-            FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions(), templatePath);
+            FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions());
             var addModule = new AddModule(new AddModuleOptions
             {
                 BundleId = options.BundleId,
@@ -222,13 +220,13 @@ namespace Refactor.Angular
 
             if (apiControllerDeclaration == null)
             {
-                FileManager.CreateFileFromTemplate(apiControllerPath, "webapi.cshtml", viewModel, templatePath);
+                FileManager.CreateFileFromTemplate(apiControllerPath, "webapi.cshtml", viewModel);
                 FileManager.AddCompileToProject(project.MsbuildProject, apiControllerPart);
             }
 
             if (mvcControllerDeclaration == null)
             {
-                FileManager.CreateFileFromTemplate(mvcControllerPath, "mvccontroller.cshtml", viewModel, templatePath);
+                FileManager.CreateFileFromTemplate(mvcControllerPath, "mvccontroller.cshtml", viewModel);
                 FileManager.AddCompileToProject(project.MsbuildProject, mvcControllerPart);
             }
 
@@ -278,7 +276,7 @@ namespace Refactor.Angular
                 var cshtmlPart = "Views\\" + viewModel.Name + "\\" + method.Name + ".cshtml";
                 var cshtmlPath = Path.Combine(projectPath, cshtmlPart);
 
-                FileManager.CreateFileFromTemplate(cshtmlPath, "view.cshtml", viewViewModel, templatePath);
+                FileManager.CreateFileFromTemplate(cshtmlPath, "view.cshtml", viewViewModel);
                 FileManager.AddContentToProject(project.MsbuildProject, cshtmlPart);
             }
 

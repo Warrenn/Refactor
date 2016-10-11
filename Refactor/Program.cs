@@ -45,7 +45,10 @@ namespace Refactor
             }
 
             Options.CurrentOptions = options;
-
+            var templateFolder = string.IsNullOrEmpty(options.TemplatesFolder) ? "Templates" : options.TemplatesFolder;
+            var solutionFolder = Path.GetDirectoryName(options.Solution);
+            options.TemplatesFolder = Path.Combine(solutionFolder, templateFolder);
+            
             if (!File.Exists(options.Solution))
             {
                 Trace.TraceError("The solution file must exist");

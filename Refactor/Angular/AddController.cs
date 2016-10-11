@@ -5,8 +5,6 @@ namespace Refactor.Angular
 {
     public class AddController : ArgsRefactorFileStrategy<AddControllerOptions>, IRefactorProjectStrategy
     {
-        private string relativeRoot = "";
-
         public AddController(AddControllerOptions options)
             : base(options)
         {
@@ -27,8 +25,6 @@ namespace Refactor.Angular
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
             var controllerPath = Path.Combine(projectPath, controllerpart);
-            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
-            var templatePath = Path.Combine(project.Solution.Directory, templateFolder);
 
             if (!Directory.Exists(areaPath))
             {
@@ -49,10 +45,8 @@ namespace Refactor.Angular
                 ServiceMethod = NgManager.CamelCase(serviceParts[1])
             };
 
-            FileManager.CreateFileFromTemplate(modulePath, "Refactor.Angular.area.module.cshtml",
-                new {Module = options.Area});
-            FileManager.CreateFileFromTemplate(controllerPath, "Refactor.Angular.controller.cshtml",
-                typeof (ControllerViewModel), model);
+            FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml", new {Module = options.Area});
+            FileManager.CreateFileFromTemplate(controllerPath, "controller.cshtml", model);
 
             FileManager.AddContentToProject(project.MsbuildProject, modulepart);
             FileManager.AddContentToProject(project.MsbuildProject, controllerpart);

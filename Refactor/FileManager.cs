@@ -34,10 +34,13 @@ namespace Refactor
 
         public static void BackupFile(string fileName)
         {
+            if (string.IsNullOrEmpty(Options.CurrentOptions.BackupId))
+            {
+                Options.CurrentOptions.BackupId = DateTime.Now.ToString("yyyyMMddhhmm");
+            }
+
             var extension = Path.GetExtension(fileName);
-            var backupId = string.IsNullOrEmpty(Options.CurrentOptions.BackupId)
-                ? DateTime.Now.ToString("yyyyMMddhhmm")
-                : Options.CurrentOptions.BackupId;
+            var backupId = Options.CurrentOptions.BackupId;
             var newExtension = extension + "." + backupId + ".backup";
             var backupName = Path.ChangeExtension(fileName, newExtension);
 
@@ -68,13 +71,13 @@ namespace Refactor
             var assembly = Assembly.GetExecutingAssembly();
 
             using (var stream = assembly.GetManifestResourceStream(templateName))
-            using (var reader = new StreamReader(stream))
+            using (var reader = new StreamReader(stream ?? Stream.Null))
             {
                 return reader.ReadToEnd();
             }
         }
 
-        public static void CreateFileFromTemplate<T>(string path, string templateName, T model, string templatePath)
+        public static void CreateFileFromTemplate<T>(string path, string templateName, T model)
         {
             if (File.Exists(path))
             {
@@ -82,11 +85,30 @@ namespace Refactor
             }
 
             var modelType = typeof(T);
-            var fullTemplateName = modelType.Namespace + "." + templateName;
-            var templateFileName = Path.Combine(templatePath, templateName);
-            var moduleTemplate = (string.IsNullOrEmpty(templatePath) || !File.Exists(templateFileName))
-                ? GetTemplate(fullTemplateName)
-                : File.ReadAllText(templateFileName);
+            string templateSource;
+
+            if (!string.IsNullOrEmpty(Options.CurrentOptions.TemplatesFolder) &&
+                Directory.Exists(Options.CurrentOptions.TemplatesFolder) &&
+                File.Exists(Path.Combine(Options.CurrentOptions.TemplatesFolder, templateName)))
+            {
+                templateSource = File.ReadAllText(Path.Combine(Options.CurrentOptions.TemplatesFolder, templateName));
+            }
+            else
+            {
+                var stackTrace = new StackTrace();
+                var staackFrame = stackTrace.GetFrame(1);
+                var callingMethod = staackFrame.GetMethod();
+                var callingType = callingMethod.DeclaringType ?? modelType;
+                var fullTemplateName = callingType.Namespace + "." + templateName;
+                templateSource = GetTemplate(fullTemplateName);
+            }
+
+            if (string.IsNullOrEmpty(templateSource))
+            {
+                Trace.TraceError("Couldn't find {0}", templateName);
+                return;
+            }
+            
             var config = new TemplateServiceConfiguration
             {
                 DisableTempFileLocking = true,
@@ -95,7 +117,7 @@ namespace Refactor
 
             Engine.Razor = RazorEngineService.Create(config);
 
-            var content = Engine.Razor.RunCompile(moduleTemplate, templateName, modelType, model);
+            var content = Engine.Razor.RunCompile(templateSource, templateName, modelType, model);
             Trace.WriteLine(path);
             var directory = Path.GetDirectoryName(path);
             if (!Directory.Exists(directory))
@@ -105,9 +127,10 @@ namespace Refactor
             File.WriteAllText(path, content);
         }
 
-        public static void AddContentToProject(Project project, string include)
+        public static void AddContentToProject(Project project, string include,
+            IEnumerable<KeyValuePair<string, string>> metaData = null)
         {
-            AddItemToProject("Content", project, include);
+            AddItemToProject("Content", project, include, metaData);
         }
 
         private static void AddItemToProject(string itemType, Project project, string include,
@@ -132,13 +155,21 @@ namespace Refactor
             project.Save();
         }
 
-        public static void AddCompileToProject(Project project, string include)
+        public static void AddCompileToProject(Project project, string include,
+            IEnumerable<KeyValuePair<string, string>> metaData = null)
         {
-            AddItemToProject("Compile", project, include);
+            AddItemToProject("Compile", project, include, metaData);
         }
 
         public static void AddWcfReferenceToProject(Project project, string wcfPath)
         {
+            if (string.IsNullOrEmpty(wcfPath))
+            {
+                return;
+            }
+            wcfPath = wcfPath.Trim(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) +
+                      Path.PathSeparator;
+
             var projectDirectory = Path.GetDirectoryName(project.FullPath);
 
             AddItemToProject("WCFMetadataStorage", project, wcfPath);
@@ -155,7 +186,7 @@ namespace Refactor
                 if (string.Equals(fileNameOnly, "Reference.cs",
                     StringComparison.InvariantCultureIgnoreCase))
                 {
-                    AddItemToProject("Compile", project, Path.Combine(wcfPath, "Reference.cs"),
+                    AddCompileToProject(project, Path.Combine(wcfPath, "Reference.cs"),
                         new Dictionary<string, string>
                         {
                             {"AutoGen", "True"},
@@ -194,8 +225,6 @@ namespace Refactor
                     AddItemToProject("None", project, Path.Combine(wcfPath, fileNameOnly));
                 }
             }
-
-            project.Save();
         }
     }
 }

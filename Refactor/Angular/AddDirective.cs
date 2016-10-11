@@ -119,13 +119,13 @@ namespace Refactor.Angular
                         .Select(p => NgManager.SplitByCase(p.Name))
                 };
 
-                FileManager.CreateFileFromTemplate(htmlPath, "directive.html.cshtml", viewModel, templatePath);
+                FileManager.CreateFileFromTemplate(htmlPath, "directive.html.cshtml", viewModel);
                 FileManager.AddContentToProject(project.MsbuildProject, htmlpart);
             }
 
             FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml",
-                new AddModuleOptions {Module = options.Area}, templatePath);
-            FileManager.CreateFileFromTemplate(directivePath, "directive.cshtml", options, templatePath);
+                new AddModuleOptions {Module = options.Area});
+            FileManager.CreateFileFromTemplate(directivePath, "directive.cshtml", options);
             FileManager.AddContentToProject(project.MsbuildProject, modulepart);
             FileManager.AddContentToProject(project.MsbuildProject, directivepart);
 

@@ -25,8 +25,6 @@ namespace Refactor.Angular
             var jsRoot = options.JsRoot;
             var invokeExpression = (InvocationExpression) creationNode.Parent.Parent;
             var cloneExpression = (InvocationExpression) invokeExpression.Clone();
-            var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
-            var templatePath = Path.Combine(entry.CSharpFile.Project.Solution.Directory, templateFolder);
             var script = entry.Script;
 
             if (string.IsNullOrEmpty(jsRoot))
@@ -47,7 +45,7 @@ namespace Refactor.Angular
                 NgManager.AddJsFileToNode(cloneExpression, "external", jsRoot + fileName);
             }
 
-            FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions(), templatePath);
+            FileManager.CreateFileFromTemplate(appJsPath, "app.module.cshtml", new AddModuleOptions());
             NgManager.AddJsFileToNode(cloneExpression, "app", "app.module.js", true);
             FileManager.AddContentToProject(project, "Content\\js\\app.module.js");
 

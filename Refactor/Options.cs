@@ -24,6 +24,11 @@ namespace Refactor
             HelpText = "Backup id is used to prevent overriding of previous backups and to keep the backup of changes in sync.")]
         public string BackupId { get; set; }
 
+        [Option('l', "template",
+            Required = false,
+            HelpText = "The directory where the cshtml templates are stored")]
+        public string TemplatesFolder { get; set; }
+
         public static Options CurrentOptions { get; set; }
     }
 }
