@@ -29,7 +29,7 @@ namespace Refactor.Angular
             addedJsToBundle = false;
             routeName = CreateRouteName(options.Route, options.Project);
             controllerName = options.Controller.Replace("Controller", "");
-            fileName = NgManager.CamelCase(controllerName) + "DataService.js";
+            fileName = TypeManager.CamelCase(controllerName) + "DataService.js";
         }
         
         public static string CreateRouteName(string route, string project)
@@ -88,7 +88,7 @@ namespace Refactor.Angular
             return new DataServiceViewModel
             {
                 Name = serviceName,
-                CamelCaseName = NgManager.CamelCase(serviceName),
+                CamelCaseName = TypeManager.CamelCase(serviceName),
                 Methods = controllerDeclaration
                     .Type
                     .GetMethods(m =>
@@ -99,7 +99,7 @@ namespace Refactor.Angular
                     .Select(m => new DataServiceViewModel.MethodCall
                     {
                         Name = m.Name,
-                        CamelCaseName = NgManager.CamelCase(m.Name),
+                        CamelCaseName = TypeManager.CamelCase(m.Name),
                         IsPost = m.Attributes.Any(a => a.AttributeType.Name == "HttpPostAttribute")
                     }).ToArray()
             };

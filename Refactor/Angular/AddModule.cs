@@ -9,7 +9,7 @@ namespace Refactor.Angular
         public AddModule(AddModuleOptions options)
             : base(options)
         {
-            module = NgManager.CamelCase(options.Module);
+            module = TypeManager.CamelCase(options.Module);
         }
 
         public override void RefactorFile(FileEntry entry)

@@ -10,6 +10,7 @@ using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.CSharp.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
+using Microsoft.Ajax.Utilities;
 
 namespace Refactor.Angular
 {
@@ -98,29 +99,7 @@ namespace Refactor.Angular
             CSharpAstResolver resolver,
             string serviceName)
         {
-            return (
-                from codetype in file.SyntaxTree.Descendants.OfType<TypeDeclaration>()
-                let resolvedType = resolver.Resolve(codetype)
-                where
-                    codetype.Attributes.Any(s => s.Attributes.Any(a => a.Type.ToString() == "ServiceContract")) &&
-                    resolvedType.Type.Name == serviceName
-                select resolvedType).FirstOrDefault();
-        }
-
-        private static bool IsPage(IParameterizedMember method)
-        {
-            return
-                method.Parameters.Any(p => p.Type.Name == "Request" && p.Type.TypeParameterCount > 0) &&
-                method.ReturnType.Name == "Page" &&
-                method.ReturnType.TypeParameterCount > 0;
-        }
-
-        private static string GetTypeName(IType type)
-        {
-            var name = type.Name;
-            if (!type.IsParameterized) return name;
-            var generics = type.TypeArguments.Select(GetTypeName).ToArray();
-            return name + "<" + string.Join(",", generics) + ">";
+            return TypeManager.GetServices(file, resolver).FirstOrDefault(r => r.Type.Name == serviceName);
         }
 
         public void RefactorProject(CSharpProject project)
@@ -142,32 +121,10 @@ namespace Refactor.Angular
                 return;
             }
 
-            var viewModel = new WireUpViewModel
-            {
-                CamelCaseName = NgManager.CamelCase(module),
-                Name = module,
-                Type = serviceDeclaration.Type,
-                Project = project,
-                Usings = GetUsings(serviceDeclaration.Type),
-                Methods = serviceDeclaration
-                    .Type
-                    .GetMethods(m => m.IsPublic && !m.IsStatic && m.Attributes.Any(a => ((CSharpAttribute)a).AttributeType.ToString() == "OperationContract[Attribute]"), GetMemberOptions.IgnoreInheritedMembers)
-                    .Select(m => new WireUpViewModel.MethodCall
-                    {
-                        CamelCaseName = NgManager.CamelCase(m.Name),
-                        Name = m.Name,
-                        IsPageMethod = IsPage(m),
-                        ReturnType = m.ReturnType,
-                        ReturnTypeName = GetTypeName(m.ReturnType),
-                        Parameters = m.Parameters.Select(p => new WireUpViewModel.ParameterModel
-                        {
-                            Parameter = p,
-                            Name = p.Name,
-                            TypeName = GetTypeName(p.Type)
-                        }),
-                        ParameterStrings = m.Parameters.Select(p => GetTypeName(p.Type) + " " + p.Name).ToArray()
-                    })
-            };
+            var viewModel = TypeManager.CreateTypeViewModel<WireupViewModel>(serviceDeclaration.Type);
+            viewModel.Name = module;
+            viewModel.CamelCaseName = TypeManager.CamelCase(module);
+            viewModel.Methods.ForEach(m => m.IsPageMethod = TypeManager.IsPage(m.Method));
 
             var projectPath = Path.GetDirectoryName(project.MsbuildProject.FullPath);
             var apiControllerPart = "Controllers\\" + viewModel.Name + "ApiController.cs";
@@ -254,22 +211,22 @@ namespace Refactor.Angular
                 {
                     CamelCaseName = method.CamelCaseName,
                     ControllerName = controller + "Controller",
-                    Type = GetTypeName(method.Parameters.First().Parameter.Type),
+                    Type = TypeManager.GetTypeName(method.Parameters.First().Parameter.Type),
                     Name = method.Name,
-                    ResultName = GetTypeName(method.ReturnType.TypeArguments.First()),
+                    ResultName = TypeManager.GetTypeName(method.ReturnType.TypeArguments.First()),
                     Prefix = viewModel.CamelCaseName,
                     PropertyNames = method
                         .ReturnType
                         .TypeArguments
                         .First()
                         .GetProperties(p => p.IsPublic && p.CanGet && p.CanSet, GetMemberOptions.IgnoreInheritedMembers)
-                        .Select(p => NgManager.SplitByCase(p.Name)),
+                        .Select(p => TypeManager.SplitByCase(p.Name)),
                     Properties = method
                         .ReturnType
                         .TypeArguments
                         .First()
                         .GetProperties(p => p.IsPublic && p.CanGet && p.CanSet, GetMemberOptions.IgnoreInheritedMembers)
-                        .Select(p => NgManager.CamelCase(p.Name)),
+                        .Select(p => TypeManager.CamelCase(p.Name)),
                     Title = viewModel.Name,
                     Usings = viewModel.Usings
                 };
@@ -285,32 +242,6 @@ namespace Refactor.Angular
 
             bundleFileEntry.Script.Replace(invokeExpression, cloneExpression);
             FileManager.CopyIfChanged(bundleFileEntry);
-        }
-
-        private IEnumerable<string> GetUsings(IType type)
-        {
-            var list = new List<string> {type.Namespace};
-            list.AddRange(
-                from method in type.GetMethods(m => true)
-                let returnType = method.ReturnType
-                select returnType.Namespace);
-            list.AddRange(
-                from method in type.GetMethods(m => true)
-                let returnType = method.ReturnType
-                from typeArgument in returnType.TypeArguments
-                select typeArgument.Namespace);
-            list.AddRange(
-                from method in type.GetMethods(m => true)
-                from parameter in method.Parameters
-                let parameterType = parameter.Type
-                select parameterType.Namespace);
-            list.AddRange(
-                from method in type.GetMethods(m => true)
-                from parameter in method.Parameters
-                let parameterType = parameter.Type
-                from typeArgument in parameterType.TypeArguments
-                select typeArgument.Namespace);
-            return list.Distinct();
         }
     }
 }

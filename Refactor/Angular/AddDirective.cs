@@ -27,14 +27,14 @@ namespace Refactor.Angular
 
             if (string.IsNullOrEmpty(options.ServiceMethod))
             {
-                options.ServiceMethod = NgManager.CamelCase(serviceParts[1]);
+                options.ServiceMethod = TypeManager.CamelCase(serviceParts[1]);
             }
 
             webApiController = serviceParts[0];
 
             if (string.IsNullOrEmpty(options.Area))
             {
-                options.Area = NgManager.CamelCase(webApiController
+                options.Area = TypeManager.CamelCase(webApiController
                     .Replace("Api", "")
                     .Replace("Controller", ""));
             }
@@ -46,7 +46,7 @@ namespace Refactor.Angular
 
             if (string.IsNullOrEmpty(options.ServiceName))
             {
-                options.ServiceName = NgManager
+                options.ServiceName = TypeManager
                     .CamelCase(webApiController
                     .Replace("Controller", "")) + "DataService";
             }
@@ -87,7 +87,7 @@ namespace Refactor.Angular
         {
             var projectPath = Path.GetDirectoryName(project.FileName);
             var areapart = "Content\\js\\" + options.Area;
-            var modulepart = areapart + "\\" + NgManager.CamelCase(options.Area) + ".module.js";
+            var modulepart = areapart + "\\" + TypeManager.CamelCase(options.Area) + ".module.js";
             var directivepart = areapart + "\\" + options.Directive + ".js";
             var htmlpart = areapart + "\\" + options.Directive + ".html";
             var templateFolder = string.IsNullOrEmpty(options.Template) ? "NgTemplates" : options.Template;
@@ -106,17 +106,17 @@ namespace Refactor.Angular
             {
                 var viewModel = new AddDirectiveViewModel
                 {
-                    Heading = NgManager.SplitByCase(methodDeclaration.Name),
+                    Heading = TypeManager.SplitByCase(methodDeclaration.Name),
                     InputType = methodDeclaration.Parameters.Select(p => p.Type).FirstOrDefault(),
                     OutputType = methodDeclaration.ReturnType,
                     Properties = methodDeclaration
                         .ReturnType
                         .GetProperties(options: GetMemberOptions.IgnoreInheritedMembers)
-                        .Select(p => NgManager.CamelCase(p.Name)),
+                        .Select(p => TypeManager.CamelCase(p.Name)),
                     PropertyLabels = methodDeclaration
                         .ReturnType
                         .GetProperties(options: GetMemberOptions.IgnoreInheritedMembers)
-                        .Select(p => NgManager.SplitByCase(p.Name))
+                        .Select(p => TypeManager.SplitByCase(p.Name))
                 };
 
                 FileManager.CreateFileFromTemplate(htmlPath, "directive.html.cshtml", viewModel);

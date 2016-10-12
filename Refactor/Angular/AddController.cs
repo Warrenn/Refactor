@@ -19,8 +19,8 @@ namespace Refactor.Angular
         {
             var projectPath = Path.GetDirectoryName(project.FileName);
             var areapart = "Content\\js\\" + options.Area;
-            var modulepart = areapart + "\\" + NgManager.CamelCase(options.Area) + ".module.js";
-            var controllerpart = areapart + "\\" + NgManager.CamelCase(options.Controller) + ".js";
+            var modulepart = areapart + "\\" + TypeManager.CamelCase(options.Area) + ".module.js";
+            var controllerpart = areapart + "\\" + TypeManager.CamelCase(options.Controller) + ".js";
             var serviceParts = options.Service.Split('.');
             var areaPath = Path.Combine(projectPath, areapart);
             var modulePath = Path.Combine(projectPath, modulepart);
@@ -40,9 +40,9 @@ namespace Refactor.Angular
             var model = new ControllerViewModel
             {
                 Area = options.Area,
-                CamelCaseName = NgManager.CamelCase(options.Controller),
-                ServiceName = NgManager.CamelCase(serviceParts[0]),
-                ServiceMethod = NgManager.CamelCase(serviceParts[1])
+                CamelCaseName = TypeManager.CamelCase(options.Controller),
+                ServiceName = TypeManager.CamelCase(serviceParts[0]),
+                ServiceMethod = TypeManager.CamelCase(serviceParts[1])
             };
 
             FileManager.CreateFileFromTemplate(modulePath, "area.module.cshtml", new {Module = options.Area});

@@ -1,11 +1,8 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory.CSharp;
-using ICSharpCode.NRefactory.CSharp.Resolver;
 using ICSharpCode.NRefactory.CSharp.TypeSystem;
-using ICSharpCode.NRefactory.TypeSystem;
 using ICSharpCode.NRefactory.TypeSystem.Implementation;
 using Microsoft.Ajax.Utilities;
 using AstNode = ICSharpCode.NRefactory.CSharp.AstNode;
@@ -14,16 +11,6 @@ namespace Refactor.Angular
 {
     public static class NgManager
     {
-        public static string SplitByCase(string value)
-        {
-            var r = new Regex(@"
-                        (?<=[A-Z])(?=[A-Z][a-z]) |
-                        (?<=[^A-Z])(?=[A-Z]) |
-                        (?<=[A-Za-z])(?=[^A-Za-z])",
-                RegexOptions.IgnorePatternWhitespace | RegexOptions.Compiled);
-            return r.Replace(value, " ");
-        }
-
         public static bool AddJsFileToNode(InvocationExpression cloneExpression, string comment, string newValue, bool firstInGroup = false)
         {
             var addNewRef = true;
@@ -196,11 +183,6 @@ namespace Refactor.Angular
 
             FileManager.BackupFile(appPath);
             File.WriteAllText(appPath, output);
-        }
-
-        public static string CamelCase(string name)
-        {
-            return name.Substring(0, 1).ToLower() + name.Substring(1);
         }
 
         public static string GetRouteDeclaration(CSharpFile file, string routeName)

@@ -1,0 +1,57 @@
+﻿@using System.Linq
+@using ICSharpCode.NRefactory.CSharp
+@using RazorEngine.Templating
+@using Refactor.Integration
+@inherits TemplateBase<IntegrationModel>
+using AbCap.Cerberus.Common.Caching;
+using AbCap.Cerberus.Common.Integration;
+using AbCap.Cerberus.Common.Logging;
+using AbCap.Cerberus.Core.Runtime;
+@foreach (var name in Model.ServiceViewModel.Usings)
+{
+@:using @name;
+}
+
+namespace AbCap.Cerberus.Integration.Agents.@(Model.Name)
+{
+    public class @(Model.ServiceViewModel.Name)Agent :
+        AbstractIntegrationAgent<@(Model.ServiceViewModel.Name)Client, @(Model.ServiceViewModel.Name)>,
+        @(Model.ServiceViewModel.Name)
+    {
+
+        #region Constructors and Destructors
+        public @(Model.ServiceViewModel.Name)Agent()
+            : this(SystemComponent.Resolve<ILogger>(),
+                SystemComponent.Resolve<ICache>())
+        {
+        }
+
+        public @(Model.ServiceViewModel.Name)Agent(ILogger logger, ICache cache)
+            : base(logger, cache)
+        {
+        }
+
+        #endregion
+
+        #region I@(Model.ServiceViewModel.Name) Implementation
+
+        @foreach (var method in Model.ServiceViewModel.Methods)
+        {
+        <text>
+        public @Raw(method.ReturnTypeName) @(method.Name)(@Raw(string.Join(",", method.ParameterStrings.ToArray())))
+        {
+            @Raw(method.ReturnTypeName) returnValue = default(@Raw(method.ReturnTypeName));
+            Execute(() =>
+            {
+                returnValue = Proxy.@(method.Name)(@(string.Join(",", method.Parameters.Select(m => m.Name).ToArray())));
+
+            });
+            return returnValue;
+        }
+        </text>
+        }
+
+        #endregion
+
+        }
+}

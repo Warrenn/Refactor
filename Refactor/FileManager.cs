@@ -168,7 +168,7 @@ namespace Refactor
                 return;
             }
             wcfPath = wcfPath.Trim(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) +
-                      Path.PathSeparator;
+                      Path.DirectorySeparatorChar;
 
             var projectDirectory = Path.GetDirectoryName(project.FullPath);
 
@@ -176,7 +176,7 @@ namespace Refactor
 
             var pathParts = wcfPath.Split(new[] {Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar},
                 StringSplitOptions.RemoveEmptyEntries);
-            AddItemToProject("WCFMetadata", project, pathParts[0] + Path.PathSeparator);
+            AddItemToProject("WCFMetadata", project, pathParts[0] + Path.DirectorySeparatorChar);
 
 
             foreach (var filename in Directory.GetFiles(Path.Combine(projectDirectory, wcfPath)))

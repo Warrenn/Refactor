@@ -11,12 +11,12 @@ namespace Refactor.Integration
     {
         [Option('n', "name",
             Required = true,
-            HelpText = "The name of the identifier to the remote proxy")]
+            HelpText = "The name of the section that the remote proxy belongs to")]
         public string Name { get; set; }
 
         [Option('c', "cerberus",
             Required = true,
-            HelpText = "The solution path of the cerberus solution")]
+            HelpText = "The solution path of the cerberus gateway solution")]
         public string CerberusSln { get; set; }
     }
 }
