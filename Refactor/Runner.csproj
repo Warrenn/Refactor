@@ -7,9 +7,9 @@
     <ProjectGuid>{1B42929E-679C-4927-93F4-6E723104C4C0}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Refactor</RootNamespace>
-    <AssemblyName>Refactor</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Runner</RootNamespace>
+    <AssemblyName>Runner</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -76,23 +76,23 @@
     <Reference Include="Microsoft.Build" />
     <Reference Include="Microsoft.Build.Framework" />
     <Reference Include="Mono.Cecil, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Mdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Mdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Pdb, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Pdb.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Cecil.Rocks, Version=0.9.6.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
-      <HintPath>..\packages\Mono.Cecil.0.9.6.1\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
+      <HintPath>..\packages\Mono.Cecil.0.9.6.4\lib\net45\Mono.Cecil.Rocks.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="RazorEngine, Version=3.7.7.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
-      <HintPath>..\packages\RazorEngine.3.7.7\lib\net45\RazorEngine.dll</HintPath>
+    <Reference Include="RazorEngine, Version=3.9.0.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\packages\RazorEngine.3.9.0\lib\net45\RazorEngine.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -109,60 +109,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Angular\AddControllerOptions.cs" />
-    <Compile Include="Angular\AddModule.cs" />
-    <Compile Include="Angular\AddModuleOptions.cs" />
-    <Compile Include="Angular\AddDataService.cs" />
-    <Compile Include="Angular\AddDataServiceOptions.cs" />
-    <Compile Include="Angular\AddController.cs" />
-    <Compile Include="Angular\ControllerViewModel.cs" />
-    <Compile Include="Angular\AddDirectiveViewModel.cs" />
-    <Compile Include="Angular\ViewViewModel.cs" />
-    <Compile Include="Angular\WireUpOptions.cs" />
-    <Compile Include="Angular\WireUp.cs" />
-    <Compile Include="Angular\UpdateBundle.cs" />
-    <Compile Include="Angular\UpdateBundleOptions.cs" />
-    <Compile Include="Angular\DataServiceViewModel.cs" />
-    <Compile Include="Angular\JsAppModuleVisitor.cs" />
-    <Compile Include="Angular\NgManager.cs" />
-    <Compile Include="Angular\WireupViewModel.cs" />
-    <Compile Include="TypeViewModel.cs" />
-    <Compile Include="ArgsRefactorFileStrategy.cs" />
-    <Compile Include="Cacheable\CacheableRefactorFile.cs" />
-    <Compile Include="CSharpFile.cs" />
-    <Compile Include="CSharpProject.cs" />
-    <Compile Include="FileEntry.cs" />
-    <Compile Include="IFileEntriesEnumerator.cs" />
-    <Compile Include="IProjectsEnumerator.cs" />
-    <Compile Include="Integration\IntegrateProxy.cs" />
-    <Compile Include="Integration\IntegrationModel.cs" />
-    <Compile Include="Integration\IntegrateProxyOptions.cs" />
-    <Compile Include="IRefactorFileStrategy.cs" />
-    <Compile Include="Angular\AddDirectiveOptions.cs" />
-    <Compile Include="Angular\AddDirective.cs" />
-    <Compile Include="IRefactorProjectStrategy.cs" />
-    <Compile Include="Options.cs" />
-    <Compile Include="FileManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Solution.cs" />
-    <Compile Include="TryCatch\TryCatchRefactorFile.cs" />
-    <Compile Include="TypeManager.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Angular\area.module.cshtml" />
-    <EmbeddedResource Include="Angular\directive.cshtml" />
-    <EmbeddedResource Include="Angular\directive.html.cshtml" />
-    <EmbeddedResource Include="Angular\dataservice.cshtml" />
-    <EmbeddedResource Include="Angular\controller.cshtml" />
-    <EmbeddedResource Include="Angular\app.module.cshtml" />
-    <EmbeddedResource Include="Angular\webapi.cshtml" />
-    <EmbeddedResource Include="Angular\mvccontroller.cshtml" />
-    <EmbeddedResource Include="Angular\view.cshtml" />
     <None Include="App.config">
       <SubType>Designer</SubType>
     </None>
-    <EmbeddedResource Include="Integration\integration.agent.cshtml" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
@@ -181,6 +134,28 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Refactor.Angular\Refactor.Angular.csproj">
+      <Project>{04a2b706-df0c-4530-8b28-56b9ecd9f744}</Project>
+      <Name>Refactor.Angular</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Refactor.Cacheable\Refactor.Cacheable.csproj">
+      <Project>{91a93476-cc4e-44eb-aeff-9051db2faa46}</Project>
+      <Name>Refactor.Cacheable</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Refactor.Common\Refactor.csproj">
+      <Project>{6b1bfb48-a00e-4114-a0a2-a56f6534f866}</Project>
+      <Name>Refactor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Refactor.Integration\Refactor.Integration.csproj">
+      <Project>{68d6db66-ecd8-4955-951e-72e7ef6cb034}</Project>
+      <Name>Refactor.Integration</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Refactor.TryCatch\Refactor.TryCatch.csproj">
+      <Project>{be5639d6-ee0f-40fb-9062-97738f44db1a}</Project>
+      <Name>Refactor.TryCatch</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

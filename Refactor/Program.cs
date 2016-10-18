@@ -8,8 +8,9 @@ using CommandLine;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Refactoring;
 using ICSharpCode.NRefactory.Editor;
+using Refactor;
 
-namespace Refactor
+namespace Runner
 {
     class Program
     {

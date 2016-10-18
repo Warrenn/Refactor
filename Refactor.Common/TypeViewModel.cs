@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Refactor
@@ -16,9 +15,9 @@ namespace Refactor
 
         public IEnumerable<string> Usings { get; set; }
 
-        public IEnumerable<PropertyCall> Properties { get; set; }
+        public IEnumerable<PropertyModel> Properties { get; set; }
 
-        public class PropertyCall
+        public class PropertyModel
         {
             public string Name { get; set; }
 

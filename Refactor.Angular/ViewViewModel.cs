@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using ICSharpCode.NRefactory.TypeSystem;
 
 namespace Refactor.Angular
 {

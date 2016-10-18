@@ -1,31 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using ICSharpCode.NRefactory.CSharp;
 
 namespace Refactor.Integration
 {
-    public class IntegrateProxy :
-        ArgsRefactorFileStrategy<IntegrateProxyOptions>,
+    public class IntegrationInterface :
+        ArgsRefactorFileStrategy<IntegrationInterfaceOptions>,
         IRefactorProjectStrategy
     {
         private readonly IntegrationModel model;
 
-        public IntegrateProxy(IntegrateProxyOptions options) : base(options)
+        public IntegrationInterface(IntegrationInterfaceOptions options) : base(options)
         {
-            if (!File.Exists(options.CerberusSln))
-            {
-                throw new ArgumentException(string.Format("the solution file {0} could not be found",
-                    options.CerberusSln));
-            }
-            options.Name = string.IsNullOrEmpty(options.Name) ? "Clients" : options.Name;
+            options.Agent = string.IsNullOrEmpty(options.Agent) ? "Clients" : options.Agent;
 
             model = new IntegrationModel
             {
                 DataContracts = new List<TypeDeclaration>(),
                 ViewModelContracts = new List<TypeViewModel>(),
-                Name = options.Name
+                Name = options.Agent
             };
 
         }
@@ -114,31 +108,31 @@ namespace Refactor.Integration
 
         public void RefactorProject(CSharpProject project)
         {
-            var cerburusSolution = new Solution(options.CerberusSln);
-            var integrationProject = cerburusSolution.Projects.First(p => p.Title == "AbCap.Cerberus.Integration");
+            //var cerburusSolution = new Solution(options.CerberusSln);
+            //var integrationProject = cerburusSolution.Projects.First(p => p.Title == "AbCap.Cerberus.Integration");
 
 
-            //copy the wcf and wsdl files
-            var destinationfolder = integrationProject.Folder + model.ServiceReferencePath;
-            var sourceFolder = project.Folder + model.ServiceReferencePath;
-            if (!Directory.Exists(destinationfolder))
-            {
-                Directory.CreateDirectory(destinationfolder);
-            }
+            ////copy the wcf and wsdl files
+            //var destinationfolder = integrationProject.Folder + model.ServiceReferencePath;
+            //var sourceFolder = project.Folder + model.ServiceReferencePath;
+            //if (!Directory.Exists(destinationfolder))
+            //{
+            //    Directory.CreateDirectory(destinationfolder);
+            //}
 
-            foreach (var file in Directory.GetFiles(sourceFolder))
-            {
-                var filename = Path.GetFileName(file);
-                File.Copy(file, Path.Combine(destinationfolder, filename));
-            }
-            FileManager.AddWcfReferenceToProject(integrationProject.MsbuildProject, model.ServiceReferencePath);
+            //foreach (var file in Directory.GetFiles(sourceFolder))
+            //{
+            //    var filename = Path.GetFileName(file);
+            //    File.Copy(file, Path.Combine(destinationfolder, filename));
+            //}
+            //FileManager.AddWcfReferenceToProject(integrationProject.MsbuildProject, model.ServiceReferencePath);
 
-            //generate the agent and add it to the integration project
-            var agentPart = "Agents\\" + model.Name + "\\" + model.ServiceDeclaration.Name + "Agent.cs";
-            var agentPath = Path.Combine(integrationProject.Folder, agentPart);
+            ////generate the agent and add it to the integration project
+            //var agentPart = "Agents\\" + model.Name + "\\" + model.ServiceDeclaration.Name + "Agent.cs";
+            //var agentPath = Path.Combine(integrationProject.Folder, agentPart);
 
-            FileManager.CreateFileFromTemplate(agentPath, "integration.agent.cshtml", model);
-            FileManager.AddCompileToProject(integrationProject.MsbuildProject, agentPart);
+            //FileManager.CreateFileFromTemplate(agentPath, "integration.agent.cshtml", model);
+            //FileManager.AddCompileToProject(integrationProject.MsbuildProject, agentPart);
         }
     }
 }

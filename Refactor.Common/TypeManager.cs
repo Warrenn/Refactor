@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using ICSharpCode.NRefactory.CSharp;
 using ICSharpCode.NRefactory.CSharp.Resolver;
-using ICSharpCode.NRefactory.CSharp.TypeSystem;
 using ICSharpCode.NRefactory.Semantics;
 using ICSharpCode.NRefactory.TypeSystem;
 
@@ -99,7 +98,7 @@ namespace Refactor
                 Usings = GetUsings(serviceDeclarationType),
                 Properties = serviceDeclarationType
                     .GetProperties(p => p.CanGet || p.CanSet, GetMemberOptions.ReturnMemberDefinitions)
-                    .Select(p => new TypeViewModel.PropertyCall
+                    .Select(p => new TypeViewModel.PropertyModel
                     {
                         CamelCaseName = CamelCase(p.Name),
                         Name = p.Name,

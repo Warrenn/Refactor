@@ -3,7 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor", "Refactor\Refactor.csproj", "{1B42929E-679C-4927-93F4-6E723104C4C0}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Runner", "Refactor\Runner.csproj", "{1B42929E-679C-4927-93F4-6E723104C4C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor", "Refactor.Common\Refactor.csproj", "{6B1BFB48-A00E-4114-A0A2-A56F6534F866}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor.Angular", "Refactor.Angular\Refactor.Angular.csproj", "{04A2B706-DF0C-4530-8B28-56B9ECD9F744}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor.Cacheable", "Refactor.Cacheable\Refactor.Cacheable.csproj", "{91A93476-CC4E-44EB-AEFF-9051DB2FAA46}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor.Integration", "Refactor.Integration\Refactor.Integration.csproj", "{68D6DB66-ECD8-4955-951E-72E7EF6CB034}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Refactor.TryCatch", "Refactor.TryCatch\Refactor.TryCatch.csproj", "{BE5639D6-EE0F-40FB-9062-97738F44DB1A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +25,26 @@ Global
 		{1B42929E-679C-4927-93F4-6E723104C4C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B42929E-679C-4927-93F4-6E723104C4C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B42929E-679C-4927-93F4-6E723104C4C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B1BFB48-A00E-4114-A0A2-A56F6534F866}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B1BFB48-A00E-4114-A0A2-A56F6534F866}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B1BFB48-A00E-4114-A0A2-A56F6534F866}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B1BFB48-A00E-4114-A0A2-A56F6534F866}.Release|Any CPU.Build.0 = Release|Any CPU
+		{04A2B706-DF0C-4530-8B28-56B9ECD9F744}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{04A2B706-DF0C-4530-8B28-56B9ECD9F744}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{04A2B706-DF0C-4530-8B28-56B9ECD9F744}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{04A2B706-DF0C-4530-8B28-56B9ECD9F744}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91A93476-CC4E-44EB-AEFF-9051DB2FAA46}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91A93476-CC4E-44EB-AEFF-9051DB2FAA46}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91A93476-CC4E-44EB-AEFF-9051DB2FAA46}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91A93476-CC4E-44EB-AEFF-9051DB2FAA46}.Release|Any CPU.Build.0 = Release|Any CPU
+		{68D6DB66-ECD8-4955-951E-72E7EF6CB034}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68D6DB66-ECD8-4955-951E-72E7EF6CB034}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68D6DB66-ECD8-4955-951E-72E7EF6CB034}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68D6DB66-ECD8-4955-951E-72E7EF6CB034}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BE5639D6-EE0F-40FB-9062-97738F44DB1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BE5639D6-EE0F-40FB-9062-97738F44DB1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BE5639D6-EE0F-40FB-9062-97738F44DB1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BE5639D6-EE0F-40FB-9062-97738F44DB1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
